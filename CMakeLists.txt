@@ -10,10 +10,12 @@ set(testui_sources
     src/SearchBar.cpp
     src/SearchProvider.cpp
     src/SuggestionBox.cpp
+    src/TabbedProcess.cpp
 )
 set(testui_moc_classes
     src/SearchBar.h
     src/SuggestionBox.h
+    src/TabbedProcess.h
 )
 
 QT_WRAP_CPP(testui_moc_files ${testui_moc_classes})
@@ -33,3 +35,21 @@ set(unitTestsSources
 )
 kde4_add_executable(unittests ${unitTestsSources})
 target_link_libraries(unittests ${CPPUNIT_LDFLAGS} ${KDE4_KDEUI_LIBS})
+
+set(testEmbeddingSources
+    src/SearchBar.cpp
+    src/SuggestionBox.cpp
+    src/SearchProvider.cpp
+    src/TabbedProcess.cpp
+    src/TestEmbeddedEditor.cpp
+)
+
+set(testEmbeddingClasses
+    src/SearchBar.h
+    src/SuggestionBox.h
+    src/TabbedProcess.h
+)
+
+QT_WRAP_CPP(testembedding_moc_files ${testEmbeddingClasses})
+kde4_add_executable( testembedding ${testEmbeddingSources} ${testembedding_moc_files})
+target_link_libraries( testembedding ${KDE4_KDEUI_LIBS} ${KDE4_KPARTS_LIBS} )

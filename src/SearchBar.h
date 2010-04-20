@@ -1,9 +1,12 @@
 #ifndef SearchBar_h
 #define SearchBar_h
 
-#include <QObject>
-#include <QLineEdit>
 #include <cstdio>
+
+#include <QObject>
+#include <QGroupBox>
+#include <QLineEdit>
+#include <QTabWidget>
 
 #define SUGGESTION_LINE_PADDING 5
 
@@ -18,6 +21,12 @@ class SearchBar : public QLineEdit
 public:
     SearchBar(QWidget* parent = 0);
     ~SearchBar();
+
+    QTabWidget* tabs;
+    QGroupBox* groupBox;
+
+public slots:
+  void returned();
 
 private:
     SuggestionBox* m_suggestionBox;
