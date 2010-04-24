@@ -5,13 +5,36 @@
 #include <QDirModel>
 #include <QTreeView>
 #include <QSplitter>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <kde_terminal_interface.h>
 #include <klibloader.h>
 #include <kshell.h>
 #include <kparts/part.h>
-#include <KUrl>
-
+#include <KUrl> 
 #include "SearchBar.h"
+
+QWidget* createTerminalWidget(QWidget* parent = 0)
+{
+    KPluginFactory* factory = KPluginLoader("libkonsolepart").factory();
+    KParts::ReadOnlyPart* part = factory ? (factory->create<KParts::ReadOnlyPart>(parent)) : 0;
+
+    if (!part) {
+        printf("Failed to initialize part\n");
+        return 0;
+    }
+
+    TerminalInterface* terminal = qobject_cast<TerminalInterface*>(part);
+    if (!terminal) {
+        printf("Failed to initialize terminal\n");
+        return 0;
+    }
+
+    terminal->showShellInDir(KUrl().path());
+    terminal->sendInput("cd " + KShell::quoteArg(KUrl().path()) + '\n');
+    terminal->sendInput("clear\n");
+    return part->widget();
+}
 
 int main(int argc, char *argv[])
 {
@@ -26,39 +49,26 @@ int main(int argc, char *argv[])
          ki18n("Some text..."),
          "http://tutorial.com/",
          "submit@bugs.kde.org");
-
-    KCmdLineArgs::init( argc, argv, &aboutData );
+    KCmdLineArgs::init(argc, argv, &aboutData);
     KApplication app;
-    //QSplitter *splitter = new QSplitter();
 
-    //QDirModel *model = new QDirModel;
-    //QTreeView *tree = new QTreeView(splitter);
-    //tree->setModel(model);
-    //tree->resize(300, 500);
+    QSplitter* splitter = new QSplitter();
+    QDirModel* model = new QDirModel;
+    QTreeView* tree = new QTreeView(splitter);
+    tree->setModel(model);
+    tree->resize(100, 800);
 
-    //KPluginFactory *factory = KPluginLoader("libkonsolepart").factory();
-    //KParts::ReadOnlyPart *part = factory ? (factory->create<KParts::ReadOnlyPart>(splitter)) : 0;
+    QFrame* frame = new QFrame(splitter);
+    QBoxLayout* boxLayout = new QVBoxLayout(frame);
+    QWidget* searchBar = new Pecera::SearchBar();
+    QWidget* terminal = createTerminalWidget(frame);
 
-    //if (!part) {
-    //    printf("Failed to initialize part\n");
-    //    return 0;
-    //}
+    boxLayout->addWidget(searchBar);
+    boxLayout->addWidget(terminal);
+    frame->resize(600, 500);
+    //terminal->show();
 
-    //TerminalInterface* m_terminal = qobject_cast<TerminalInterface*>(part);
-    //if (!m_terminal) {
-    //    printf("Failed to initialize terminal\n");
-    //    return 0;
-    //}
-
-    //m_terminal->showShellInDir(KUrl().path());
-    //m_terminal->sendInput("cd " + KShell::quoteArg(KUrl().path()) + '\n');
-    //m_terminal->sendInput("clear\n");
-    //QWidget *m_widget = part->widget();
-    //m_widget->resize(300, 500);
-    //m_widget->show();
-
-    //splitter->show();
-    Pecera::SearchBar searchBar;
-    searchBar.show();
+    splitter->resize(700, 500);
+    splitter->show();
     return app.exec();
 }

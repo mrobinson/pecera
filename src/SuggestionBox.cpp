@@ -21,22 +21,22 @@ SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
 
 bool SuggestionBox::newSearchResult(Result* result)
 {
-    printf("subscriber\n");
     bool keepGoing = SearchSubscriber::newSearchResult(result);
-    printf("--------\n");
-    for (int i = 0; i < m_results.size(); i++)
-    {
-        printf("%s\n", m_results[i]->text().toUtf8().data());
+
+    if (m_results.size() < 5)
+        return true;
+
+    const QRect& geometry = m_bar->geometry();
+    const QPoint& point = m_bar->mapToGlobal(m_bar->pos());
+    if (!isVisible()) {
+        this->setGeometry(
+            point.x(), point.y() + geometry.height(),
+            geometry.width(), getLineHeight() * m_results.size());
+        show();
+    } else {
+        this->resize(geometry.width(), getLineHeight() * m_results.size());
     }
-    //emit searchUpdated;
-    this->setGeometry(
-        m_bar->geometry().x(),
-        m_bar->geometry().y() + m_bar->geometry().height(),
-        m_bar->geometry().width(),
-        getLineHeight() * m_results.size());
-    printf("%i %i %i\n", getLineHeight(), m_results.size(), getLineHeight() * m_results.size());
-    repaint(rect());
-    show();
+
     return keepGoing;
 }
 
@@ -55,12 +55,44 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     painter.fillRect(event->rect(), QBrush(Qt::white));
 
     int lineHeight = getLineHeight();
-    int fontHeight = painter.fontMetrics().height();
-    printf("results size:%i\n", m_results.size());
+    const QFontMetrics& metrics = painter.fontMetrics();
+    int baseline = SUGGESTION_LINE_PADDING + metrics.height();
+
+    QFont normalFont(painter.font());
+    QFont boldFont(painter.font());
+    boldFont.setBold(true);
+
     for (int i = 0; i < m_results.size(); i++) {
-        int baseline = (i * lineHeight) + SUGGESTION_LINE_PADDING + fontHeight;
-        painter.drawText(SUGGESTION_LINE_PADDING, baseline,
-            m_results[i]->text());
+        Result* result = m_results[i];
+        const QString& text = result->text();
+
+        int currentIndex = 0;
+        int currentX = 0;
+        const QList<Pecera::Extent>& extents = result->extents();
+        for (int j = 0; j < extents.size(); ++j) {
+            const Pecera::Extent& extent = extents[j];
+
+            QString beforeExtent = text.mid(currentIndex, extent.start() - currentIndex);
+            if (beforeExtent.size() > 0) {
+                painter.drawText(currentX, baseline, beforeExtent);
+                currentX += metrics.boundingRect(beforeExtent).width();
+            }
+
+            QString extentText = text.mid(extent.start(), extent.length());
+            painter.setFont(boldFont);
+            painter.drawText(currentX, baseline, extentText);
+            currentX += metrics.boundingRect(extentText).width();
+
+            painter.setFont(normalFont);
+            currentIndex = extent.end();
+        }
+
+        if (currentIndex < text.size()) {
+            QString finalSection = text.right(text.size() - currentIndex);
+            painter.drawText(currentX, baseline, finalSection);
+        }
+
+        baseline += lineHeight;
     }
 }
 
