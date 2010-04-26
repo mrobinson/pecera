@@ -1,6 +1,5 @@
 #include <QPainter>
 #include <QPaintEvent>
-
 #include "Result.h"
 #include "SearchBar.h"
 #include "SearchProvider.h"
@@ -14,17 +13,30 @@ SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
     , m_bar(bar)
     , m_searchProvider(new NaiveSearchProvider("fnames.txt"))
     , m_searchTask(0)
+    , m_normalFont(font())
+    , m_boldFont(font())
+    , m_normalFontMetrics(0)
+    , m_boldFontMetrics(0)
 {
+    m_boldFont.setBold(true);
+    m_normalFontMetrics = new QFontMetrics(m_normalFont);
+    m_boldFontMetrics = new QFontMetrics(m_boldFont);
+
     connect(this, SIGNAL(searchUpdated()),
         this, SLOT(handleSearchUpdated()));
+}
+
+SuggestionBox::~SuggestionBox()
+{
+    if (m_boldFontMetrics)
+        delete m_boldFontMetrics;
+    if (m_normalFontMetrics)
+        delete m_normalFontMetrics;
 }
 
 bool SuggestionBox::newSearchResult(Result* result)
 {
     bool keepGoing = SearchSubscriber::newSearchResult(result);
-
-    if (m_results.size() < 5)
-        return true;
 
     const QRect& geometry = m_bar->geometry();
     const QPoint& point = m_bar->mapToGlobal(m_bar->pos());
@@ -55,12 +67,7 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     painter.fillRect(event->rect(), QBrush(Qt::white));
 
     int lineHeight = getLineHeight();
-    const QFontMetrics& metrics = painter.fontMetrics();
-    int baseline = SUGGESTION_LINE_PADDING + metrics.height();
-
-    QFont normalFont(painter.font());
-    QFont boldFont(painter.font());
-    boldFont.setBold(true);
+    int baseline = SUGGESTION_LINE_PADDING + m_normalFontMetrics->height();
 
     for (int i = 0; i < m_results.size(); i++) {
         Result* result = m_results[i];
@@ -75,15 +82,15 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
             QString beforeExtent = text.mid(currentIndex, extent.start() - currentIndex);
             if (beforeExtent.size() > 0) {
                 painter.drawText(currentX, baseline, beforeExtent);
-                currentX += metrics.boundingRect(beforeExtent).width();
+                currentX += m_normalFontMetrics->tightBoundingRect(beforeExtent).width();
             }
 
             QString extentText = text.mid(extent.start(), extent.length());
-            painter.setFont(boldFont);
+            painter.setFont(m_boldFont);
             painter.drawText(currentX, baseline, extentText);
-            currentX += metrics.boundingRect(extentText).width();
+            currentX += m_boldFontMetrics->tightBoundingRect(extentText).width();
 
-            painter.setFont(normalFont);
+            painter.setFont(m_normalFont);
             currentIndex = extent.end();
         }
 
@@ -118,11 +125,7 @@ void SuggestionBox::lineEditChanged(const QString& string)
 
 int SuggestionBox::getLineHeight()
 {
-    static int lineHeight = -1;
-    if (lineHeight == -1)
-        lineHeight = fontMetrics().height() + (SUGGESTION_LINE_PADDING * 2);
-
-    return lineHeight;
+    return m_normalFontMetrics->height() + (SUGGESTION_LINE_PADDING * 2);
 }
 
 }

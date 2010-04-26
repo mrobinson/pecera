@@ -16,6 +16,7 @@ class SuggestionBox : public QFrame, public SearchSubscriber
 
 public:
     SuggestionBox(SearchBar* bar, Qt::WindowFlags flags);
+    ~SuggestionBox();
     void suggestionsUpdated(SearchUpdatedEvent* event);
     bool newSearchResult(Result* result);
 
@@ -33,6 +34,11 @@ private:
     SearchBar* m_bar;
     SearchProvider* m_searchProvider;
     SearchTask* m_searchTask;
+    QFont m_normalFont;
+    QFont m_boldFont;
+    QFontMetrics* m_normalFontMetrics;
+    QFontMetrics* m_boldFontMetrics;
+
     int getLineHeight();
 };
 
