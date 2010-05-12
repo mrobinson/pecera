@@ -44,14 +44,14 @@ public:
     void addOrUpdateEntry(const QString&, qint64);
     QString getAbsolutePath(const QString&);
     QString getRelativePath(const QString&);
+    void scanRoot();
 
 private:
     QString m_name;
     QDir m_root;
-    QHash<QString, File> m_files;
+    QHash<QString, File*> m_files;
     QMutex m_filesMutex;
 
-    void scanRoot();
     void save();
     void load();
 };

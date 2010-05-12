@@ -63,11 +63,11 @@ void Project::addOrUpdateEntry(const QString& relativePath, qint64 lastUpdated)
 {
     QMutexLocker lock(&m_filesMutex);
     if (m_files.contains(relativePath)) {
-        m_files[relativePath].setLastUpdated(lastUpdated);
+        m_files[relativePath]->setLastUpdated(lastUpdated);
         return;
     }
 
-    m_files[relativePath] = File(this, relativePath, lastUpdated);
+    m_files[relativePath] = new File(this, relativePath, lastUpdated);
 }
 
 void Project::scanRoot()
@@ -81,6 +81,9 @@ void Project::scanRoot()
         QFileInfoList entries(directory.entryInfoList(QDir::NoFilter, QDir::DirsLast));
 
         for (int i = 0; i < entries.length(); i++) {
+            if (entries[i].fileName() == "." || entries[i].fileName() == "..")
+                continue;
+
             QString absolutePath(entries[i].absoluteFilePath());
             addOrUpdateEntry(getRelativePath(absolutePath), updated);
 
@@ -158,12 +161,12 @@ void Project::save()
         return;
 
     QMutexLocker lock(&m_filesMutex);
-    QHash<QString, File>::const_iterator i = m_files.begin();
+    QHash<QString, File*>::const_iterator i = m_files.begin();
     while (i != m_files.end()) {
-        const File& file = i.value();
-        QByteArray path(file.relativePath().toUtf8());
+        File* file = i.value();
+        QByteArray path(file->relativePath().toUtf8());
         sqlite3_bind_text(statement, 0, path, path.size(), SQLITE_STATIC);
-        sqlite3_bind_int64(statement, 1, file.lastUpdated());
+        sqlite3_bind_int64(statement, 1, file->lastUpdated());
 
         // BIG FIXME: Check the return value here and do the right thing.
         sqlite3_step(statement);
