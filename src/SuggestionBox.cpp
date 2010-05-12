@@ -37,7 +37,12 @@ SuggestionBox::~SuggestionBox()
 bool SuggestionBox::newSearchResult(Result* result)
 {
     bool keepGoing = SearchSubscriber::newSearchResult(result);
+    emit searchUpdated();
+    return keepGoing;
+}
 
+void SuggestionBox::handleSearchUpdated()
+{
     const QRect& geometry = m_bar->geometry();
     const QPoint& point = m_bar->mapToGlobal(m_bar->pos());
     if (!isVisible()) {
@@ -47,15 +52,8 @@ bool SuggestionBox::newSearchResult(Result* result)
         show();
     } else {
         this->resize(geometry.width(), getLineHeight() * m_results.size());
+        repaint(rect());
     }
-
-    return keepGoing;
-}
-
-void SuggestionBox::handleSearchUpdated()
-{
-    repaint(rect());
-    show();
 }
 
 void SuggestionBox::paintEvent(QPaintEvent* event)
@@ -69,6 +67,7 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     int lineHeight = getLineHeight();
     int baseline = SUGGESTION_LINE_PADDING + m_normalFontMetrics->height();
 
+    QMutexLocker lock(&m_resultsMutex);
     for (int i = 0; i < m_results.size(); i++) {
         Result* result = m_results[i];
         const QString& text = result->text();
@@ -120,7 +119,7 @@ void SuggestionBox::lineEditChanged(const QString& string)
     static QString fullText("Full text search for: ");
     result->setText(fullText + string);
     newSearchResult(result);
-    m_searchProvider->performSearch(m_searchTask);
+    m_searchProvider->scheduleSearch(m_searchTask);
 }
 
 int SuggestionBox::getLineHeight()

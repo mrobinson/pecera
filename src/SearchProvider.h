@@ -1,8 +1,9 @@
 #ifndef SearchProvider_h
 #define SearchProvider_h
 
-#include <QRunnable>
 #include <QEvent>
+#include <QMutex>
+#include <QRunnable>
 
 namespace Pecera
 {
@@ -40,6 +41,7 @@ public:
 
 protected:
     QList<Result*> m_results;
+    QMutex m_resultsMutex;
 };
 
 class SearchProvider

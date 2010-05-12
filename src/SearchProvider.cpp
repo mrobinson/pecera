@@ -1,5 +1,6 @@
 #include <QFile>
 #include <QList>
+#include <QMutexLocker>
 #include <QPair>
 #include <QString>
 #include <QStringList>
@@ -37,11 +38,9 @@ bool SearchTask::newSearchResult(Result* result)
 
 bool SearchSubscriber::newSearchResult(Result* result)
 {
-    // XXX: Need to lock results here
+    QMutexLocker lock(&m_resultsMutex);
     m_results.append(result);
-
     return m_results.size() <= 10;
-    // XXX: Need to unlock results here
 }
 
 void SearchProvider::scheduleSearch(SearchTask* task)
@@ -91,8 +90,9 @@ void NaiveSearchProvider::performSearch(SearchTask* task)
             numberOfResults++;
         }
 
-        if (!task->running())
+        if (!task->running()) {
             break;
+        }
     }
 
     delete nextResult;
