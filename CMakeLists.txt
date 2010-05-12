@@ -10,6 +10,7 @@ include(${QT_USE_FILE})
 
 # Pecera
 set(pecera_sources
+    src/Project.cpp
     src/SearchBar.cpp
     src/SuggestionBox.cpp
     src/SearchProvider.cpp
@@ -25,7 +26,7 @@ set(pecera_moc_classes
 QT_WRAP_CPP(pecera pecera_moc_files ${pecera_moc_classes})
 
 add_executable(pecera ${pecera_sources} ${pecera_moc_files})
-target_link_libraries(pecera ${QT_LIBRARIES})
+target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES})
 
 
 # Unit tests
