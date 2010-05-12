@@ -26,7 +26,7 @@ public:
     QGroupBox* groupBox;
 
 public slots:
-  void returned();
+    void returned();
 
 private:
     SuggestionBox* m_suggestionBox;
