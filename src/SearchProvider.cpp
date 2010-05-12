@@ -28,11 +28,9 @@ void SearchTask::run()
 
 bool SearchTask::newSearchResult(Result* result)
 {
-    printf("new seearch result\n");
     if (!running())
         return false;
 
-    printf("here\n");
     m_running = m_subscriber->newSearchResult(result);
     return running();
 }
@@ -87,7 +85,6 @@ void NaiveSearchProvider::performSearch(SearchTask* task)
         }
 
         if (j == numberOfParts) {
-            printf("found result:%s\n", filename.toUtf8().data());
             nextResult->setText(filename);
             task->newSearchResult(nextResult);
             nextResult = new Result;

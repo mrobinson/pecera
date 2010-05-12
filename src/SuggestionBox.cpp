@@ -1,6 +1,5 @@
 #include <QPainter>
 #include <QPaintEvent>
-
 #include "Result.h"
 #include "SearchBar.h"
 #include "SearchProvider.h"
@@ -14,29 +13,42 @@ SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
     , m_bar(bar)
     , m_searchProvider(new NaiveSearchProvider("fnames.txt"))
     , m_searchTask(0)
+    , m_normalFont(font())
+    , m_boldFont(font())
+    , m_normalFontMetrics(0)
+    , m_boldFontMetrics(0)
 {
+    m_boldFont.setBold(true);
+    m_normalFontMetrics = new QFontMetrics(m_normalFont);
+    m_boldFontMetrics = new QFontMetrics(m_boldFont);
+
     connect(this, SIGNAL(searchUpdated()),
         this, SLOT(handleSearchUpdated()));
 }
 
+SuggestionBox::~SuggestionBox()
+{
+    if (m_boldFontMetrics)
+        delete m_boldFontMetrics;
+    if (m_normalFontMetrics)
+        delete m_normalFontMetrics;
+}
+
 bool SuggestionBox::newSearchResult(Result* result)
 {
-    printf("subscriber\n");
     bool keepGoing = SearchSubscriber::newSearchResult(result);
-    printf("--------\n");
-    for (int i = 0; i < m_results.size(); i++)
-    {
-        printf("%s\n", m_results[i]->text().toUtf8().data());
+
+    const QRect& geometry = m_bar->geometry();
+    const QPoint& point = m_bar->mapToGlobal(m_bar->pos());
+    if (!isVisible()) {
+        this->setGeometry(
+            point.x(), point.y() + geometry.height(),
+            geometry.width(), getLineHeight() * m_results.size());
+        show();
+    } else {
+        this->resize(geometry.width(), getLineHeight() * m_results.size());
     }
-    //emit searchUpdated;
-    this->setGeometry(
-        m_bar->geometry().x(),
-        m_bar->geometry().y() + m_bar->geometry().height(),
-        m_bar->geometry().width(),
-        getLineHeight() * m_results.size());
-    printf("%i %i %i\n", getLineHeight(), m_results.size(), getLineHeight() * m_results.size());
-    repaint(rect());
-    show();
+
     return keepGoing;
 }
 
@@ -55,12 +67,39 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     painter.fillRect(event->rect(), QBrush(Qt::white));
 
     int lineHeight = getLineHeight();
-    int fontHeight = painter.fontMetrics().height();
-    printf("results size:%i\n", m_results.size());
+    int baseline = SUGGESTION_LINE_PADDING + m_normalFontMetrics->height();
+
     for (int i = 0; i < m_results.size(); i++) {
-        int baseline = (i * lineHeight) + SUGGESTION_LINE_PADDING + fontHeight;
-        painter.drawText(SUGGESTION_LINE_PADDING, baseline,
-            m_results[i]->text());
+        Result* result = m_results[i];
+        const QString& text = result->text();
+
+        int currentIndex = 0;
+        int currentX = 0;
+        const QList<Pecera::Extent>& extents = result->extents();
+        for (int j = 0; j < extents.size(); ++j) {
+            const Pecera::Extent& extent = extents[j];
+
+            QString beforeExtent = text.mid(currentIndex, extent.start() - currentIndex);
+            if (beforeExtent.size() > 0) {
+                painter.drawText(currentX, baseline, beforeExtent);
+                currentX += m_normalFontMetrics->tightBoundingRect(beforeExtent).width();
+            }
+
+            QString extentText = text.mid(extent.start(), extent.length());
+            painter.setFont(m_boldFont);
+            painter.drawText(currentX, baseline, extentText);
+            currentX += m_boldFontMetrics->tightBoundingRect(extentText).width();
+
+            painter.setFont(m_normalFont);
+            currentIndex = extent.end();
+        }
+
+        if (currentIndex < text.size()) {
+            QString finalSection = text.right(text.size() - currentIndex);
+            painter.drawText(currentX, baseline, finalSection);
+        }
+
+        baseline += lineHeight;
     }
 }
 
@@ -86,11 +125,7 @@ void SuggestionBox::lineEditChanged(const QString& string)
 
 int SuggestionBox::getLineHeight()
 {
-    static int lineHeight = -1;
-    if (lineHeight == -1)
-        lineHeight = fontMetrics().height() + (SUGGESTION_LINE_PADDING * 2);
-
-    return lineHeight;
+    return m_normalFontMetrics->height() + (SUGGESTION_LINE_PADDING * 2);
 }
 
 }

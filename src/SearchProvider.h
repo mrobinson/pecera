@@ -35,6 +35,7 @@ private:
 class SearchSubscriber
 {
 public:
+    virtual ~SearchSubscriber() {};
     virtual bool newSearchResult(Result* result);
 
 protected:
