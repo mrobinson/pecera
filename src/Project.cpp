@@ -120,8 +120,11 @@ void Project::load()
     // UTF-8, not whatever codepage is currently defined.
     sqlite3* database;
     int rc = sqlite3_open(projectFile.fileName().toUtf8().data(), &database);
-    if (rc)
+    if (rc) {
+        reportError(sqlite3_errmsg(database));
+        sqlite3_close(database);
         return;
+    }
 
     char* errorMessage;
     rc = sqlite3_exec(database, "SELECT * from files", fileReadFromStorageCallback, this, &errorMessage);
@@ -129,6 +132,53 @@ void Project::load()
         sqlite3_free(errorMessage);
 
     sqlite3_close(database);
+}
+
+static void handleSQLiteError(Project* project, int rc, sqlite3* database, char* errorMessage = 0)
+{
+    QString error;
+    switch (rc) {
+        case SQLITE_ERROR: error = "SQLITE_ERROR"; break;
+        case SQLITE_INTERNAL: error = "SQLITE_INTERNAL"; break;
+        case SQLITE_PERM: error = "SQLITE_PERM"; break;
+        case SQLITE_ABORT: error = "SQLITE_ABORT"; break;
+        case SQLITE_BUSY: error = "SQLITE_BUSY"; break;
+        case SQLITE_LOCKED: error = "SQLITE_LOCKED"; break;
+        case SQLITE_NOMEM: error = "SQLITE_NOMEM"; break;
+        case SQLITE_READONLY: error = "SQLITE_READONLY"; break;
+        case SQLITE_INTERRUPT: error = "SQLITE_INTERRUPT"; break;
+        case SQLITE_IOERR: error = "SQLITE_IOERR"; break;
+        case SQLITE_CORRUPT: error = "SQLITE_CORRUPT"; break;
+        case SQLITE_NOTFOUND: error = "SQLITE_NOTFOUND"; break;
+        case SQLITE_FULL: error = "SQLITE_FULL"; break;
+        case SQLITE_CANTOPEN: error = "SQLITE_CANTOPEN"; break;
+        case SQLITE_PROTOCOL: error = "SQLITE_PROTOCOL"; break;
+        case SQLITE_EMPTY: error = "SQLITE_EMPTY"; break;
+        case SQLITE_SCHEMA: error = "SQLITE_SCHEMA"; break;
+        case SQLITE_TOOBIG: error = "SQLITE_TOOBIG"; break;
+        case SQLITE_CONSTRAINT: error = "SQLITE_CONSTRAINT"; break;
+        case SQLITE_MISMATCH: error = "SQLITE_MISMATCH"; break;
+        case SQLITE_MISUSE: error = "SQLITE_MISUSE"; break;
+        case SQLITE_NOLFS: error = "SQLITE_NOLFS"; break;
+        case SQLITE_AUTH: error = "SQLITE_AUTH"; break;
+        case SQLITE_FORMAT: error = "SQLITE_FORMAT"; break;
+        case SQLITE_RANGE: error = "SQLITE_RANGE"; break;
+        case SQLITE_NOTADB: error = "SQLITE_NOTADB"; break;
+        case SQLITE_ROW: error = "SQLITE_ROW"; break;
+        case SQLITE_DONE: error = "SQLITE_DONE"; break;
+    }
+    
+    error.append(": ");
+    error.append(sqlite3_errmsg(database));
+
+    if (errorMessage) {
+        error.append(", ");
+        error.append(errorMessage);
+        sqlite3_free(errorMessage);
+    }
+
+    sqlite3_close(database);
+    project->reportError(error);
 }
 
 void Project::save()
@@ -146,37 +196,81 @@ void Project::save()
     // UTF-8, not whatever codepage is currently defined.
     sqlite3* database;
     int rc = sqlite3_open(projectFile.fileName().toUtf8().data(), &database);
-    if (rc)
+    if (rc) {
+        handleSQLiteError(this, rc, database);
         return;
+    }
 
-    char* errorMessage;
-    rc = sqlite3_exec(database, "CREATE TALBE IF NOT EXISTS files(path TEXT, last_updated INT);", 0, 0, &errorMessage);
-    if (rc)
-        sqlite3_free(errorMessage);
+    char* errorMessage = 0;
+    rc = sqlite3_exec(database, "BEGIN;", 0, 0, &errorMessage);
+    if (rc) {
+        handleSQLiteError(this, rc, database, errorMessage);
+        return;
+    }
+
+    rc = sqlite3_exec(database, "CREATE TABLE IF NOT EXISTS files(path TEXT, last_updated INT);", 0, 0, &errorMessage);
+    if (rc) {
+        handleSQLiteError(this, rc, database, errorMessage);
+        return;
+    }
+
+    rc = sqlite3_exec(database, "DELETE FROM files;", 0, 0, &errorMessage);
+    if (rc) {
+        handleSQLiteError(this, rc, database, errorMessage);
+        return;
+    }
 
     sqlite3_stmt* statement;
-    const char* sql = "INSERT OR REPLACE INTO files(path, last_updated) values(?);";
+    const char* sql = "INSERT OR REPLACE INTO files(path, last_updated) values(?, ?);";
     const char* tail;
-    if (sqlite3_prepare(database, sql, strlen(sql), &statement, &tail) != SQLITE_OK)
+    rc = sqlite3_prepare_v2(database, sql, strlen(sql), &statement, &tail);
+    if (rc != SQLITE_OK) {
+        handleSQLiteError(this, rc, database);
         return;
+    }
 
     QMutexLocker lock(&m_filesMutex);
     QHash<QString, File*>::const_iterator i = m_files.begin();
     while (i != m_files.end()) {
         File* file = i.value();
-        QByteArray path(file->relativePath().toUtf8());
-        sqlite3_bind_text(statement, 0, path, path.size(), SQLITE_STATIC);
-        sqlite3_bind_int64(statement, 1, file->lastUpdated());
+        char* path = strdup(file->relativePath().toUtf8().data());
+        sqlite3_bind_text(statement, 1, path, strlen(path), SQLITE_STATIC);
+        sqlite3_bind_int64(statement, 2, file->lastUpdated());
 
         // BIG FIXME: Check the return value here and do the right thing.
-        sqlite3_step(statement);
-        sqlite3_reset(statement);
+        rc = sqlite3_step(statement);
+        if (rc != SQLITE_DONE) {
+            handleSQLiteError(this, rc, database);
+            return;
+        }
+
+        rc = sqlite3_reset(statement);
+        if (rc != SQLITE_OK) {
+            handleSQLiteError(this, rc, database);
+            return;
+        }
 
         i++;
     }
 
-    sqlite3_finalize(statement);
+    rc = sqlite3_finalize(statement);
+    if (rc != SQLITE_OK) {
+        handleSQLiteError(this, rc, database);
+        return;
+    }
+
+    rc = sqlite3_exec(database, "END;", 0, 0, &errorMessage);
+    if (rc) {
+        handleSQLiteError(this, rc, database, errorMessage);
+        return;
+    }
+
     sqlite3_close(database);
+}
+
+void Project::reportError(const QString& error)
+{
+    fprintf(stderr, "%s\n", error.toUtf8().data());
 }
 
 }

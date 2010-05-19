@@ -45,15 +45,15 @@ public:
     QString getAbsolutePath(const QString&);
     QString getRelativePath(const QString&);
     void scanRoot();
+    void save();
+    void load();
+    void reportError(const QString&);
 
 private:
     QString m_name;
     QDir m_root;
     QHash<QString, File*> m_files;
     QMutex m_filesMutex;
-
-    void save();
-    void load();
 };
 
 }
