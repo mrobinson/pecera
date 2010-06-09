@@ -2,8 +2,10 @@
 #define SearchProvider_h
 
 #include <QEvent>
+#include <QList>
 #include <QMutex>
 #include <QRunnable>
+#include <QString>
 
 namespace Pecera
 {
@@ -11,6 +13,7 @@ class SearchTask;
 class SearchSubscriber;
 class SearchProvider;
 class Result;
+class Project;
 
 class SearchTask : public QRunnable
 {
@@ -55,12 +58,12 @@ public:
 class NaiveSearchProvider : public SearchProvider
 {
 public:
-    NaiveSearchProvider(const QString& namesFile);
+    NaiveSearchProvider(Project* project);
     ~NaiveSearchProvider() {}
     void performSearch(SearchTask* task);
 
 private:
-    QStringList m_filenames;
+    Project* m_project;
 };
 
 class SearchUpdatedEvent : public QEvent

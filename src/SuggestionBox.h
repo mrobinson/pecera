@@ -19,6 +19,7 @@ public:
     ~SuggestionBox();
     void suggestionsUpdated(SearchUpdatedEvent* event);
     bool newSearchResult(Result* result);
+    void setProject(Project* project) { m_project = project; }
 
 signals:
     void searchUpdated();
@@ -32,12 +33,12 @@ protected:
 
 private:
     SearchBar* m_bar;
-    SearchProvider* m_searchProvider;
     SearchTask* m_searchTask;
     QFont m_normalFont;
     QFont m_boldFont;
     QFontMetrics* m_normalFontMetrics;
     QFontMetrics* m_boldFontMetrics;
+    Project* m_project;
 
     int getLineHeight();
 };

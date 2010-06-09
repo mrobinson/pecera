@@ -1,19 +1,24 @@
-#include <QApplication>
-
+#include "Project.h"
+#include "SearchBar.h"
+#include "SuggestionBox.h"
 #include <cstdio>
-#include <QLineEdit>
-
-#include <QX11EmbedContainer>
-#include <QProcess>
+#include <QApplication>
 #include <QGroupBox>
+#include <QLineEdit>
+#include <QProcess>
 #include <QObject>
 #include <QTabWidget>
 #include <QVBoxLayout>
-
-#include "SearchBar.h"
+#include <QX11EmbedContainer>
 
 int main(int argc, char *argv[])
 {
+	printf("here\n");
+    QString projectName("myProject");
+    QDir projectDir("/home/martin/app/titanium_desktop");
+    Pecera::Project p(projectName, projectDir);
+    p.scanRoot(); 
+    p.save(); 
   QApplication app(argc, argv);
 
   QGroupBox groupBox;
@@ -25,6 +30,7 @@ int main(int argc, char *argv[])
   searchBar.groupBox = &groupBox;
   searchBar.connect(&searchBar, SIGNAL(returnPressed()),
 		    &searchBar, SLOT(returned()));
+    searchBar.suggestionBox()->setProject(&p);
 
   layout.addWidget(&searchBar);
   layout.addWidget(&tabs);

@@ -1,6 +1,7 @@
 #ifndef Pecera_Project_h
 #define Pecera_Project_h
 
+#include "SearchProvider.h"
 #include <QDir>
 #include <QHash>
 #include <QFile>
@@ -12,6 +13,7 @@ namespace Pecera
 {
 
 class Project;
+class SearchTask;
 
 class File
 {
@@ -38,8 +40,9 @@ class Project
 {
 public:
     Project(const QString& name, const QDir& root);
-    QString name() { return m_name; }
-    QDir& root() { return m_root; }
+    const QString name() { return m_name; }
+    const QDir& root() { return m_root; }
+    const QHash<QString, File*>& files() { return m_files; }
 
     void addOrUpdateEntry(const QString&, qint64);
     QString getAbsolutePath(const QString&);
@@ -48,12 +51,14 @@ public:
     void save();
     void load();
     void reportError(const QString&);
+    void performFilenameSearch(SearchTask*);
 
 private:
     QString m_name;
     QDir m_root;
     QHash<QString, File*> m_files;
     QMutex m_filesMutex;
+    NaiveSearchProvider m_filenameSearchProvider;
 };
 
 }

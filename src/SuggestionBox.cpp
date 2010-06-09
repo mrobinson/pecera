@@ -1,9 +1,10 @@
-#include <QPainter>
-#include <QPaintEvent>
+#include "Project.h"
 #include "Result.h"
 #include "SearchBar.h"
 #include "SearchProvider.h"
 #include "SuggestionBox.h"
+#include <QPainter>
+#include <QPaintEvent>
 
 namespace Pecera
 {
@@ -11,12 +12,12 @@ namespace Pecera
 SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
     : QFrame(bar, flags)
     , m_bar(bar)
-    , m_searchProvider(new NaiveSearchProvider("fnames.txt"))
     , m_searchTask(0)
     , m_normalFont(font())
     , m_boldFont(font())
     , m_normalFontMetrics(0)
     , m_boldFontMetrics(0)
+    , m_project(0)
 {
     m_boldFont.setBold(true);
     m_normalFontMetrics = new QFontMetrics(m_normalFont);
@@ -67,6 +68,9 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     int lineHeight = getLineHeight();
     int baseline = SUGGESTION_LINE_PADDING + m_normalFontMetrics->height();
 
+    painter.drawText(0, baseline, "Full text search...");
+    baseline += lineHeight;
+
     QMutexLocker lock(&m_resultsMutex);
     for (int i = 0; i < m_results.size(); i++) {
         Result* result = m_results[i];
@@ -115,11 +119,7 @@ void SuggestionBox::lineEditChanged(const QString& string)
     }
 
     m_searchTask = new SearchTask(string, this);
-    Result* result = new Result;
-    static QString fullText("Full text search for: ");
-    result->setText(fullText + string);
-    newSearchResult(result);
-    m_searchProvider->scheduleSearch(m_searchTask);
+    m_project->performFilenameSearch(m_searchTask);
 }
 
 int SuggestionBox::getLineHeight()

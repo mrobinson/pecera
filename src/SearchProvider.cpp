@@ -1,3 +1,6 @@
+#include "Project.h"
+#include "Result.h"
+#include "SearchProvider.h"
 #include <QFile>
 #include <QList>
 #include <QMutexLocker>
@@ -7,9 +10,6 @@
 #include <QTextStream>
 #include <QCoreApplication>
 #include <QThreadPool>
-
-#include "Result.h"
-#include "SearchProvider.h"
 
 namespace Pecera
 {
@@ -50,15 +50,9 @@ void SearchProvider::scheduleSearch(SearchTask* task)
     QThreadPool::globalInstance()->start(task);
 }
 
-NaiveSearchProvider::NaiveSearchProvider(const QString& namesFile)
+NaiveSearchProvider::NaiveSearchProvider(Project* project)
+    : m_project(project)
 {
-    QFile file(namesFile);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return;
-
-    QTextStream in(&file);
-    while (!in.atEnd())
-        m_filenames << in.readLine();
 }
 
 void NaiveSearchProvider::performSearch(SearchTask* task)
@@ -68,8 +62,10 @@ void NaiveSearchProvider::performSearch(SearchTask* task)
     int numberOfParts = parts.size();
     int numberOfResults = 0;
 
-    for (int i = 0; i < m_filenames.size(); ++i) {
-        const QString& filename = m_filenames[i];
+    const QHash<QString, File*> files = m_project->files();
+    QHash<QString, File*>::const_iterator i;
+    for (i = files.constBegin(); i != files.constEnd(); ++i) {
+        const QString& filename = i.key();
         int j = 0;
         for (; j < numberOfParts; ++j) {
             int index = filename.indexOf(parts[j], 0, Qt::CaseInsensitive);

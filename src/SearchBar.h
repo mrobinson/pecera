@@ -22,6 +22,7 @@ public:
     SearchBar(QWidget* parent = 0);
     ~SearchBar();
 
+    SuggestionBox* suggestionBox() { return m_suggestionBox; }
     QTabWidget* tabs;
     QGroupBox* groupBox;
 
