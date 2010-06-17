@@ -35,11 +35,10 @@ SuggestionBox::~SuggestionBox()
         delete m_normalFontMetrics;
 }
 
-bool SuggestionBox::newSearchResult(Result* result)
+bool SuggestionBox::newSearchResult()
 {
-    bool keepGoing = SearchSubscriber::newSearchResult(result);
     emit searchUpdated();
-    return keepGoing;
+    return m_searchTask->results().size() <= 10;
 }
 
 void SuggestionBox::handleSearchUpdated()
@@ -47,12 +46,16 @@ void SuggestionBox::handleSearchUpdated()
     const QRect& geometry = m_bar->geometry();
     const QPoint& point = m_bar->mapToGlobal(m_bar->pos());
     if (!isVisible()) {
+        QMutexLocker lock(m_searchTask->resultsMutex());
         this->setGeometry(
             point.x(), point.y() + geometry.height(),
-            geometry.width(), getLineHeight() * m_results.size());
+            geometry.width(), getLineHeight() * m_searchTask->results().size());
         show();
     } else {
-        this->resize(geometry.width(), getLineHeight() * m_results.size());
+        {
+            QMutexLocker lock(m_searchTask->resultsMutex());
+            this->resize(geometry.width(), getLineHeight() * m_searchTask->results().size());
+        }
         repaint(rect());
     }
 }
@@ -71,9 +74,9 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     painter.drawText(0, baseline, "Full text search...");
     baseline += lineHeight;
 
-    QMutexLocker lock(&m_resultsMutex);
-    for (int i = 0; i < m_results.size(); i++) {
-        Result* result = m_results[i];
+    QMutexLocker lock(m_searchTask->resultsMutex());
+    for (int i = 0; i < m_searchTask->results().size(); i++) {
+        Result* result = m_searchTask->results()[i];
         const QString& text = result->text();
 
         int currentIndex = 0;
@@ -108,10 +111,8 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
 
 void SuggestionBox::lineEditChanged(const QString& string)
 {
-    printf("Line edit changed: %s\n", string.toUtf8().data());
     if (m_searchTask)
         m_searchTask->stop();
-    m_results.clear();
 
     if (string.isNull() || string.isEmpty()) {
         hide();

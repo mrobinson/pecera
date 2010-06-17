@@ -6,6 +6,8 @@
 #include <QMutex>
 #include <QRunnable>
 #include <QString>
+#include <cstdio>
+
 
 namespace Pecera
 {
@@ -25,14 +27,20 @@ public:
     void setProvider(SearchProvider* provider) { m_provider = provider; }
     const QString& query() { return m_query; }
     void setQuery(const QString& query) { m_query = query; }
+
+    QList<Result*>& results() { return m_results; }
+    QMutex* resultsMutex() { return &m_resultsMutex; }
+    bool newSearchResult(Result* result);
+
     bool running() { return m_running; }
     void stop() { m_running = false; }
-    bool newSearchResult(Result* result);
 
 private:
     SearchProvider* m_provider;
     SearchSubscriber* m_subscriber;
     QString m_query;
+    QList<Result*> m_results;
+    QMutex m_resultsMutex;
     bool m_running;
 };
 
@@ -40,11 +48,7 @@ class SearchSubscriber
 {
 public:
     virtual ~SearchSubscriber() {};
-    virtual bool newSearchResult(Result* result);
-
-protected:
-    QList<Result*> m_results;
-    QMutex m_resultsMutex;
+    virtual bool newSearchResult() = 0;
 };
 
 class SearchProvider

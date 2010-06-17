@@ -18,7 +18,7 @@ public:
     SuggestionBox(SearchBar* bar, Qt::WindowFlags flags);
     ~SuggestionBox();
     void suggestionsUpdated(SearchUpdatedEvent* event);
-    bool newSearchResult(Result* result);
+    virtual bool newSearchResult();
     void setProject(Project* project) { m_project = project; }
 
 signals:

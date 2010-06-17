@@ -20,6 +20,7 @@ SearchTask::SearchTask(const QString& query, SearchSubscriber* subscriber)
     , m_query(query)
     , m_running(true)
 {
+    setAutoDelete(false);
 }
 
 void SearchTask::run()
@@ -32,15 +33,11 @@ bool SearchTask::newSearchResult(Result* result)
     if (!running())
         return false;
 
-    m_running = m_subscriber->newSearchResult(result);
-    return running();
-}
-
-bool SearchSubscriber::newSearchResult(Result* result)
-{
-    QMutexLocker lock(&m_resultsMutex);
-    m_results.append(result);
-    return m_results.size() <= 10;
+    {
+        QMutexLocker lock(&m_resultsMutex);
+        m_results.append(result);
+    }
+    m_running = m_subscriber->newSearchResult();
 }
 
 void SearchProvider::scheduleSearch(SearchTask* task)
