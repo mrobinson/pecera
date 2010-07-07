@@ -47,7 +47,6 @@ void SearchTask::searchComplete()
 
 void SearchProvider::scheduleSearch(SearchTask* task)
 {
-    // XXX: Don't use the thread pool here.
     task->setProvider(this);
     QThreadPool::globalInstance()->start(task);
 }

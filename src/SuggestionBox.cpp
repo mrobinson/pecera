@@ -58,11 +58,10 @@ void SuggestionBox::searchComplete(SearchTask* task)
 void SuggestionBox::paintTimeout()
 {
     const QRect& geometry = m_bar->geometry();
-    const QPoint& point = m_bar->mapToGlobal(m_bar->pos());
+    const QPoint& point = m_bar->mapToGlobal(QPoint(0, geometry.height()));
     if (!isVisible()) {
         QMutexLocker lock(m_searchTask->resultsMutex());
-        this->setGeometry(point.x(), point.y() + geometry.height(),
-            geometry.width(), getLineHeight() * (m_searchTask->results().size() + 1));
+        this->setGeometry(point.x(), point.y(), geometry.width(), getLineHeight() * (m_searchTask->results().size() + 1));
         show();
     } else {
         {
