@@ -31,6 +31,7 @@ public:
     QList<Result*>& results() { return m_results; }
     QMutex* resultsMutex() { return &m_resultsMutex; }
     bool newSearchResult(Result* result);
+    void searchComplete();
 
     bool running() { return m_running; }
     void stop() { m_running = false; }
@@ -48,7 +49,8 @@ class SearchSubscriber
 {
 public:
     virtual ~SearchSubscriber() {};
-    virtual bool newSearchResult() = 0;
+    virtual bool newSearchResult(SearchTask*) = 0;
+    virtual void searchComplete(SearchTask*) = 0;
 };
 
 class SearchProvider

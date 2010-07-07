@@ -18,13 +18,16 @@ SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
     , m_normalFontMetrics(0)
     , m_boldFontMetrics(0)
     , m_project(0)
+    , m_paintTimer(this)
 {
     m_boldFont.setBold(true);
     m_normalFontMetrics = new QFontMetrics(m_normalFont);
     m_boldFontMetrics = new QFontMetrics(m_boldFont);
 
-    connect(this, SIGNAL(searchUpdated()),
-        this, SLOT(handleSearchUpdated()));
+    connect(this, SIGNAL(forcePaint()),
+        this, SLOT(paintTimeout()));
+    connect(&m_paintTimer, SIGNAL(timeout()),
+        this, SLOT(paintTimeout()));
 }
 
 SuggestionBox::~SuggestionBox()
@@ -35,29 +38,39 @@ SuggestionBox::~SuggestionBox()
         delete m_normalFontMetrics;
 }
 
-bool SuggestionBox::newSearchResult()
+bool SuggestionBox::newSearchResult(SearchTask* task)
 {
-    emit searchUpdated();
+    if (task != m_searchTask)
+        return false;
+
     return m_searchTask->results().size() <= 10;
 }
 
-void SuggestionBox::handleSearchUpdated()
+void SuggestionBox::searchComplete(SearchTask* task)
+{
+    if (task != m_searchTask)
+        return;
+
+    m_paintTimer.stop();
+    emit forcePaint();
+}
+
+void SuggestionBox::paintTimeout()
 {
     const QRect& geometry = m_bar->geometry();
     const QPoint& point = m_bar->mapToGlobal(m_bar->pos());
     if (!isVisible()) {
         QMutexLocker lock(m_searchTask->resultsMutex());
-        this->setGeometry(
-            point.x(), point.y() + geometry.height(),
-            geometry.width(), getLineHeight() * m_searchTask->results().size());
+        this->setGeometry(point.x(), point.y() + geometry.height(),
+            geometry.width(), getLineHeight() * (m_searchTask->results().size() + 1));
         show();
     } else {
         {
             QMutexLocker lock(m_searchTask->resultsMutex());
-            this->resize(geometry.width(), getLineHeight() * m_searchTask->results().size());
+            this->resize(geometry.width(), getLineHeight() * (m_searchTask->results().size() + 1));
         }
-        repaint(rect());
     }
+    repaint(rect());
 }
 
 void SuggestionBox::paintEvent(QPaintEvent* event)
@@ -121,6 +134,7 @@ void SuggestionBox::lineEditChanged(const QString& string)
 
     m_searchTask = new SearchTask(string, this);
     m_project->performFilenameSearch(m_searchTask);
+    m_paintTimer.start(200);
 }
 
 int SuggestionBox::getLineHeight()

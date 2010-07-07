@@ -37,7 +37,12 @@ bool SearchTask::newSearchResult(Result* result)
         QMutexLocker lock(&m_resultsMutex);
         m_results.append(result);
     }
-    m_running = m_subscriber->newSearchResult();
+    m_running = m_subscriber->newSearchResult(this);
+}
+
+void SearchTask::searchComplete()
+{
+    m_subscriber->searchComplete(this);
 }
 
 void SearchProvider::scheduleSearch(SearchTask* task)
@@ -89,6 +94,7 @@ void NaiveSearchProvider::performSearch(SearchTask* task)
     }
 
     delete nextResult;
+    task->searchComplete();
 }
 
 }
