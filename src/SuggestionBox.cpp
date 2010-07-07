@@ -3,14 +3,15 @@
 #include "SearchBar.h"
 #include "SearchProvider.h"
 #include "SuggestionBox.h"
+#include <QApplication>
 #include <QPainter>
 #include <QPaintEvent>
 
 namespace Pecera
 {
 
-SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
-    : QFrame(bar, flags)
+SuggestionBox::SuggestionBox(SearchBar* bar)
+    : QFrame(0)
     , m_bar(bar)
     , m_searchTask(0)
     , m_normalFont(font())
@@ -19,7 +20,15 @@ SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
     , m_boldFontMetrics(0)
     , m_project(0)
     , m_paintTimer(this)
+    , m_backBuffer(1000, 1000)
 {
+    setWindowFlags(Qt::Popup);
+    setFocusPolicy(Qt::NoFocus);
+    setFocusProxy(m_bar);
+    setMouseTracking(true);
+
+    installEventFilter(this);
+
     m_boldFont.setBold(true);
     m_normalFontMetrics = new QFontMetrics(m_normalFont);
     m_boldFontMetrics = new QFontMetrics(m_boldFont);
@@ -28,6 +37,24 @@ SuggestionBox::SuggestionBox(SearchBar* bar, Qt::WindowFlags flags)
         this, SLOT(paintTimeout()));
     connect(&m_paintTimer, SIGNAL(timeout()),
         this, SLOT(paintTimeout()));
+    setAttribute(Qt::WA_ShowWithoutActivating);
+}
+
+bool SuggestionBox::eventFilter(QObject*, QEvent* event)
+{
+    if (event->type() == QEvent::MouseButtonPress) {
+        hide();
+        m_bar->setFocus();
+        return true;
+    }
+
+    if (event->type() == QEvent::KeyPress) {
+        m_bar->setFocus();
+        m_bar->event(event);
+        hide();
+    }
+
+    return false;
 }
 
 SuggestionBox::~SuggestionBox()
@@ -57,19 +84,27 @@ void SuggestionBox::searchComplete(SearchTask* task)
 
 void SuggestionBox::paintTimeout()
 {
+    int size = 0;
+    {
+        QMutexLocker lock(m_searchTask->resultsMutex());
+        size = m_searchTask->results().size();
+    }
+
+    if (size == 0) {
+        hide();
+        return;
+    }
+
     const QRect& geometry = m_bar->geometry();
     const QPoint& point = m_bar->mapToGlobal(QPoint(0, geometry.height()));
     if (!isVisible()) {
-        QMutexLocker lock(m_searchTask->resultsMutex());
-        this->setGeometry(point.x(), point.y(), geometry.width(), getLineHeight() * (m_searchTask->results().size() + 1));
+        this->setGeometry(point.x(), point.y(), geometry.width(), getLineHeight() * (size + 1));
+        QWidget* mainWindow = m_bar->window();
         show();
     } else {
-        {
-            QMutexLocker lock(m_searchTask->resultsMutex());
-            this->resize(geometry.width(), getLineHeight() * (m_searchTask->results().size() + 1));
-        }
+        this->resize(geometry.width(), getLineHeight() * (size + 1));
+        repaint(rect());
     }
-    repaint(rect());
 }
 
 void SuggestionBox::paintEvent(QPaintEvent* event)
@@ -77,7 +112,7 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     if (isHidden())
         return;
 
-    QPainter painter(this);
+    QPainter painter(&m_backBuffer);
     painter.fillRect(event->rect(), QBrush(Qt::white));
 
     int lineHeight = getLineHeight();
@@ -119,6 +154,12 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
 
         baseline += lineHeight;
     }
+
+    painter.end();
+    painter.begin(this);
+    painter.drawPixmap(QPoint(0,0), m_backBuffer);
+    painter.end();
+
 }
 
 void SuggestionBox::lineEditChanged(const QString& string)

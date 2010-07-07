@@ -16,12 +16,12 @@ class SuggestionBox : public QFrame, public SearchSubscriber
     Q_OBJECT
 
 public:
-    SuggestionBox(SearchBar* bar, Qt::WindowFlags flags);
+    SuggestionBox(SearchBar* bar);
     ~SuggestionBox();
     void setProject(Project* project) { m_project = project; }
-
     virtual bool newSearchResult(SearchTask*);
     virtual void searchComplete(SearchTask*);
+    virtual bool eventFilter(QObject*, QEvent*);
 
 signals:
     void forcePaint();
@@ -42,6 +42,7 @@ private:
     QFontMetrics* m_boldFontMetrics;
     Project* m_project;
     QTimer m_paintTimer;
+    QPixmap m_backBuffer;
 
     int getLineHeight();
 };
