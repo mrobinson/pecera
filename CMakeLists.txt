@@ -2,6 +2,7 @@ project(pecera)
 cmake_minimum_required(VERSION 2.8)
 find_package(Qt4 REQUIRED)
 find_package(PkgConfig)
+find_package(X11)
 pkg_check_modules(CPPUNIT cppunit)
 pkg_check_modules(SQLITE sqlite3)
 
@@ -28,7 +29,7 @@ set(pecera_moc_classes
 QT_WRAP_CPP(pecera pecera_moc_files ${pecera_moc_classes})
 
 add_executable(pecera ${pecera_sources} ${pecera_moc_files})
-target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES})
+target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${X11_LIBRARIES})
 
 # branched source set for the time being.
 set(lpecera_sources
@@ -51,7 +52,7 @@ set(lpecera_moc_classes
 QT_WRAP_CPP(lpecera lpecera_moc_files ${lpecera_moc_classes})
 
 add_executable(lpecera ${lpecera_sources} ${lpecera_moc_files})
-target_link_libraries(lpecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES})
+target_link_libraries(lpecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${X11_LIBRARIES})
 
 # Unit tests
 set(unitTestsSources
