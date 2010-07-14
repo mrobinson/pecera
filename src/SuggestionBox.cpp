@@ -135,13 +135,13 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
             QString beforeExtent = text.mid(currentIndex, extent.start() - currentIndex);
             if (beforeExtent.size() > 0) {
                 painter.drawText(currentX, baseline, beforeExtent);
-                currentX += m_normalFontMetrics->tightBoundingRect(beforeExtent).width();
+                currentX += m_normalFontMetrics->width(beforeExtent);
             }
 
             QString extentText = text.mid(extent.start(), extent.length());
             painter.setFont(m_boldFont);
             painter.drawText(currentX, baseline, extentText);
-            currentX += m_boldFontMetrics->tightBoundingRect(extentText).width();
+            currentX += m_boldFontMetrics->width(extentText);
 
             painter.setFont(m_normalFont);
             currentIndex = extent.end();
