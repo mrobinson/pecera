@@ -13,13 +13,14 @@
 
 int main(int argc, char *argv[])
 {
-	printf("here\n");
+    QApplication app(argc, argv);
+    app.setApplicationName("Pecera");
+
     QString projectName("myProject");
     QDir projectDir("/home/martin/app/titanium_desktop");
     Pecera::Project p(projectName, projectDir);
     p.scanRoot(); 
     p.save(); 
-  QApplication app(argc, argv);
 
   QGroupBox groupBox;
   QVBoxLayout layout;
