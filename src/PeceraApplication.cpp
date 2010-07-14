@@ -1,5 +1,8 @@
 
 #include "PeceraApplication.h"
+#include <X11/Xlib.h>
+#include <QX11Info>
+#include <iostream>
 
 namespace Pecera {
   
@@ -49,6 +52,23 @@ void PeceraApplication::reloadLocationShortcut() {
 void PeceraApplication::focusSearchBar() {
   static int count = 0;
   std::cout << "focusSearchBar " << count++ << std::endl;
+}
+
+bool PeceraApplication::x11EventFilter(XEvent* event) {
+  Display *display = QX11Info::display();
+
+  if(event->type == KeyPress || event->type == KeyRelease) {
+    //std::cout << event->xkey.keycode << std::endl;
+  }
+  if (event->type == ClientMessage) {
+    std::cout << "ClientMessage" << std::endl;
+    Atom atom = XInternAtom(display, "_XEMBED", FALSE);
+    if(event->xclient.message_type == atom) {
+      std::cout << "XEMBED" << std::endl;
+    }
+  }
+
+  QApplication::x11EventFilter(event);
 }
 
 }

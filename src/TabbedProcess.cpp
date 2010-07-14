@@ -1,6 +1,9 @@
 #include <cstdio>
 
+#include "PeceraApplication.h"
 #include "TabbedProcess.h"
+
+#include <unistd.h>
 
 // TODO
 // 1. Memory management
@@ -58,8 +61,18 @@ namespace Pecera
     this->process = new QProcess(this);
     connect(this->process, SIGNAL(finished(int, QProcess::ExitStatus)),
 	    this, SLOT(finished(int, QProcess::ExitStatus)));
+    connect(this->process, SIGNAL(started()),
+	    this, SLOT(started()));
     this->tabBar->setCurrentIndex(this->index);
     this->process->start(*this->command, *this->arguments);
+    
+  }
+
+  void TabbedProcess::started() {
+    sleep(5);
+    std::cout << "started..." << std::endl;
+    PeceraApplication& app = PeceraApplication::getApplication();
+    app.reloadLocationShortcut();
   }
 
   void TabbedProcess::finished(int exitCode, QProcess::ExitStatus exitStatus) {

@@ -30,6 +30,8 @@ private:
   ~PeceraApplication() {} 
   PeceraApplication(const PeceraApplication &);
   PeceraApplication& operator=(const PeceraApplication &);
+
+  bool x11EventFilter(XEvent* event);
 };
 
 }

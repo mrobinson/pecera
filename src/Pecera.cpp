@@ -1,32 +1,41 @@
-#include <QApplication>
+#include "Project.h"
+#include "SearchBar.h"
+#include "SuggestionBox.h"
+#include "PeceraApplication.h"
 
 #include <cstdio>
-#include <QLineEdit>
-
-#include <QX11EmbedContainer>
-#include <QProcess>
+#include <QApplication>
 #include <QGroupBox>
+#include <QLineEdit>
+#include <QProcess>
 #include <QObject>
 #include <QTabWidget>
-#include <QAction>
 #include <QVBoxLayout>
-
-#include "SearchBar.h"
+#include <QX11EmbedContainer>
 
 int main(int argc, char *argv[])
 {
-  QApplication app(argc, argv);
+  QString projectName("slideshow");
+  QDir projectDir("/home/luke/src/sassy-public-hg/slideshow");
+  Pecera::Project p(projectName, projectDir);
+  p.scanRoot(); 
+  p.save(); 
 
+  Pecera::PeceraApplication& app = Pecera::PeceraApplication::initializeApplication(argc, argv);
+  
   QGroupBox groupBox;
   QVBoxLayout layout;
+
+  app.setLocationBarWindow(&groupBox);
+  app.reloadLocationShortcut();
 
   QTabWidget tabs;
   Pecera::SearchBar searchBar;
   searchBar.tabs = &tabs;
-  searchBar.eep = new Pecera::EnvironmentEditorProvider(&groupBox, &tabs);
   searchBar.groupBox = &groupBox;
   searchBar.connect(&searchBar, SIGNAL(returnPressed()),
 		    &searchBar, SLOT(returned()));
+  searchBar.suggestionBox()->setProject(&p);
 
   layout.addWidget(&searchBar);
   layout.addWidget(&tabs);
@@ -37,3 +46,4 @@ int main(int argc, char *argv[])
 
   return app.exec();
 }
+

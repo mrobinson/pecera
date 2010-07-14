@@ -16,18 +16,42 @@ set(pecera_sources
     src/SearchProvider.cpp
     src/TabbedProcess.cpp
     src/TestEmbeddedEditor.cpp
+    src/PeceraApplication.cpp
 )
 
 set(pecera_moc_classes
      src/SearchBar.h
      src/SuggestionBox.h
      src/TabbedProcess.h
+     src/PeceraApplication.h
 )
 QT_WRAP_CPP(pecera pecera_moc_files ${pecera_moc_classes})
 
 add_executable(pecera ${pecera_sources} ${pecera_moc_files})
 target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES})
 
+# branched source set for the time being.
+set(lpecera_sources
+    src/Project.cpp
+    src/SearchBar.cpp
+    src/SuggestionBox.cpp
+    src/SearchProvider.cpp
+    src/TabbedProcess.cpp
+    src/Pecera.cpp
+    src/PeceraApplication.cpp
+)
+
+set(lpecera_moc_classes
+    src/SearchBar.h
+    src/SuggestionBox.h
+    src/TabbedProcess.h
+    src/PeceraApplication.h
+)
+
+QT_WRAP_CPP(lpecera lpecera_moc_files ${lpecera_moc_classes})
+
+add_executable(lpecera ${lpecera_sources} ${lpecera_moc_files})
+target_link_libraries(lpecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES})
 
 # Unit tests
 set(unitTestsSources

@@ -1,9 +1,13 @@
 #ifndef TabbedProcess_h
 #define TabbedProcess_h
 
+#include <iostream>
+
 #include <QProcess>
 #include <QTabWidget>
 #include <QX11EmbedContainer>
+
+#include "PeceraApplication.h"
 
 namespace Pecera
 {
@@ -20,6 +24,7 @@ namespace Pecera
     void setArguments(const QStringList* arguments);
 
   public slots:
+    void started();
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
 
   private:
