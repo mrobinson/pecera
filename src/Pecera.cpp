@@ -16,7 +16,7 @@
 int main(int argc, char *argv[])
 {
   QString projectName("slideshow");
-  QDir projectDir("/home/luke/src/sassy-public-hg/slideshow");
+  QDir projectDir("/home/martin/app/titanium_desktop");
   Pecera::Project p(projectName, projectDir);
   p.scanRoot(); 
   p.save(); 

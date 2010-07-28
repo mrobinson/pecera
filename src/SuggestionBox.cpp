@@ -6,6 +6,8 @@
 #include <QApplication>
 #include <QPainter>
 #include <QPaintEvent>
+#include <QPaintEvent>
+#include <algorithm>
 
 namespace Pecera
 {
@@ -14,6 +16,8 @@ SuggestionBox::SuggestionBox(SearchBar* bar)
     : QFrame(0)
     , m_bar(bar)
     , m_searchTask(0)
+    , m_activeIndex(0)
+    , m_shouldStartNewSearchWhenLineEditChanges(true)
     , m_normalFont(font())
     , m_boldFont(font())
     , m_normalFontMetrics(0)
@@ -40,6 +44,24 @@ SuggestionBox::SuggestionBox(SearchBar* bar)
     setAttribute(Qt::WA_ShowWithoutActivating);
 }
 
+void SuggestionBox::setActiveIndex(int newActiveIndex)
+{
+    {
+        QMutexLocker lock(m_searchTask->resultsMutex());
+        if (newActiveIndex < 0)
+            newActiveIndex = 0;
+        if (newActiveIndex > m_searchTask->results().size() - 1)
+            newActiveIndex = m_searchTask->results().size() - 1;
+
+        m_shouldStartNewSearchWhenLineEditChanges = false;
+        m_bar->setText(m_searchTask->results()[newActiveIndex]->text());
+        m_shouldStartNewSearchWhenLineEditChanges = true;
+
+        m_activeIndex = newActiveIndex;
+    }
+    emit forcePaint();
+}
+
 bool SuggestionBox::eventFilter(QObject*, QEvent* event)
 {
     if (event->type() == QEvent::MouseButtonPress) {
@@ -49,6 +71,18 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
     }
 
     if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+        if (keyEvent->key() == Qt::Key_Up) {
+            setActiveIndex(m_activeIndex - 1);
+            return true;
+        }
+
+        if (keyEvent->key() == Qt::Key_Down) {
+            setActiveIndex(m_activeIndex + 1);
+            return true;
+        }
+
         m_bar->setFocus();
         m_bar->event(event);
         hide();
@@ -112,20 +146,30 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     if (isHidden())
         return;
 
+    QPalette palette(QApplication::palette());
     QPainter painter(&m_backBuffer);
-    painter.fillRect(event->rect(), QBrush(Qt::white));
+    painter.fillRect(event->rect(), palette.background());
 
     int lineHeight = getLineHeight();
-    int baseline = SUGGESTION_LINE_PADDING + m_normalFontMetrics->height();
+    int baselineOffset = (lineHeight / 2) + (m_normalFontMetrics->ascent() / 2);
+    int currentLineOffset = 0;
 
-    painter.drawText(0, baseline, "Full text search...");
-    baseline += lineHeight;
+    painter.drawText(0, baselineOffset, "Full text search...");
+    currentLineOffset += lineHeight;
 
     QMutexLocker lock(m_searchTask->resultsMutex());
     for (int i = 0; i < m_searchTask->results().size(); i++) {
+        if (i == m_activeIndex) {
+            painter.fillRect(QRect(0, currentLineOffset, event->rect().width(), lineHeight), palette.highlight());
+            painter.setBrush(palette.highlightedText());
+        } else {
+            painter.setBrush(palette.text());
+        }
+
         Result* result = m_searchTask->results()[i];
         const QString& text = result->text();
 
+        int baseline = currentLineOffset + baselineOffset;
         int currentIndex = 0;
         int currentX = 0;
         const QList<Pecera::Extent>& extents = result->extents();
@@ -152,7 +196,7 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
             painter.drawText(currentX, baseline, finalSection);
         }
 
-        baseline += lineHeight;
+        currentLineOffset += lineHeight;
     }
 
     painter.end();
@@ -164,6 +208,9 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
 
 void SuggestionBox::lineEditChanged(const QString& string)
 {
+    if (!m_shouldStartNewSearchWhenLineEditChanges)
+        return;
+
     if (m_searchTask)
         m_searchTask->stop();
 
