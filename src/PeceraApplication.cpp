@@ -1,57 +1,86 @@
-
 #include "PeceraApplication.h"
-#include <X11/Xlib.h>
-#include <QX11Info>
+#include "Project.h"
 #include <iostream>
+#include <QApplication>
+#include <QGroupBox>
+#include <QLineEdit>
+#include <QObject>
+#include <QProcess>
+#include <QShortcut>
+#include <QTabWidget>
+#include <QVBoxLayout>
+#include <QX11EmbedContainer>
+#include <QX11Info>
+#include "SearchBar.h"
+#include "SuggestionBox.h"
+#include <X11/Xlib.h>
 
 namespace Pecera {
-  
-PeceraApplication* PeceraApplication::application = NULL;
 
-PeceraApplication::PeceraApplication(int& argc, char** argv) : 
-  QApplication(argc, argv) {
-  this->locationBarShortcut = NULL;
+static PeceraApplication* g_application = 0;
+PeceraApplication::PeceraApplication(int& argc, char** argv)
+    : QApplication(argc, argv)
+    , m_locationBarShortcut(0)
+{
+    g_application = this;
+
+    // FIXME: Need to get this data from configuration soon.
+    m_project = new Project(QString("slideshow"), QDir("/home/martin/app/titanium_desktop"));
+    m_project->scanRoot(); 
+    m_project->save(); 
+
+    m_window = new QGroupBox();
+    QVBoxLayout layout;
+
+    m_windowLayout = new QVBoxLayout();
+    m_searchBar = new SearchBar(m_project);
+    m_windowLayout->addWidget(m_searchBar);
+    m_tabs = new QTabWidget();
+    m_windowLayout->addWidget(m_tabs);
+
+    m_window->setLayout(m_windowLayout);
+    m_window->show();
+    m_window->resize(800, 600);
+
+    m_searchBar->tabs = m_tabs;
+    m_searchBar->groupBox = m_window;
+
+    reloadLocationShortcut();
+
+}
+
+PeceraApplication::~PeceraApplication()
+{
+    m_window->close();
+    delete m_project;
+    delete m_tabs;
+    delete m_searchBar;
+    delete m_windowLayout;
+    delete m_window;
 }
 
 PeceraApplication& PeceraApplication::getApplication()
 {
-  return *PeceraApplication::application;
+    return *g_application;
 }
 
-
-PeceraApplication& PeceraApplication::initializeApplication(int& argc, char** argv)
+void PeceraApplication::reloadLocationShortcut()
 {
-  if(PeceraApplication::application == NULL) {
-    PeceraApplication::application = new PeceraApplication(argc, argv);
-  }
+    if (m_locationBarShortcut) {
+        delete m_locationBarShortcut;
+        m_locationBarShortcut = 0;
+    }
 
-  return *PeceraApplication::application;
+    this->m_locationBarShortcut = new QShortcut(
+        QKeySequence(QObject::tr("Ctrl+L", "File|Open")), m_window);
+    QObject::connect(this->m_locationBarShortcut, SIGNAL(activated()), 
+        this, SLOT(focusSearchBar()));
 }
 
-void PeceraApplication::setLocationBarWindow(QWidget* locationBarWindow) {
-  PeceraApplication::application->locationBarWindow = locationBarWindow;
-}
-
-void PeceraApplication::reloadLocationShortcut() {
-  if(this->locationBarShortcut != NULL) {
-    delete this->locationBarShortcut;
-    this->locationBarShortcut = NULL;
-  }
-
-  this->locationBarShortcut = 
-    new QShortcut
-    (QKeySequence(QObject::tr("Ctrl+L", "File|Open")), 
-     this->locationBarWindow);
-
-  QObject::connect(this->locationBarShortcut, 
-		   SIGNAL(activated()), 
-		   this, 
-		   SLOT(focusSearchBar()));
-}
-
-void PeceraApplication::focusSearchBar() {
-  static int count = 0;
-  std::cout << "focusSearchBar " << count++ << std::endl;
+void PeceraApplication::focusSearchBar()
+{
+    m_searchBar->selectAll();
+    m_searchBar->setFocus();
 }
 
 bool PeceraApplication::x11EventFilter(XEvent* event) {

@@ -10,6 +10,7 @@ include_directories(${CPPUNIT_INCLUDES} ${SQLITE_INCLUDES})
 include(${QT_USE_FILE})
 
 # Pecera
+SET(CMAKE_BUILD_TYPE Debug)
 set(pecera_sources
     src/Project.cpp
     src/SearchBar.cpp

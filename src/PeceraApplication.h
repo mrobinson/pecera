@@ -1,37 +1,42 @@
 #ifndef PeceraApplication_h
 #define PeceraApplication_h
 
-#include <iostream>
-
 #include <QApplication>
 #include <QObject>
-#include <QShortcut>
+
+class QShortcut;
+class QGroupBox;
+class QVBoxLayout;
+class QTabWidget;
 
 namespace Pecera {
 
+class SearchBar;
+class Project;
+
 class PeceraApplication : public QApplication {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  static PeceraApplication& getApplication();
-  static PeceraApplication& initializeApplication(int& argc, char** argv);
-  void setLocationBarWindow(QWidget* locationBarWindow);
-  void reloadLocationShortcut();
+    static PeceraApplication& getApplication();
+    PeceraApplication(int& argc, char** argv);
+    ~PeceraApplication();
+    void reloadLocationShortcut();
 
 public slots:
-  void focusSearchBar();
+    void focusSearchBar();
 
-private: 
-  static PeceraApplication* application;
-  QShortcut* locationBarShortcut;
-  QWidget* locationBarWindow;
- 
-  PeceraApplication(int& argc, char** argv);
-  ~PeceraApplication() {} 
-  PeceraApplication(const PeceraApplication &);
-  PeceraApplication& operator=(const PeceraApplication &);
+private:
+    QShortcut* m_locationBarShortcut;
+    QGroupBox* m_window;
+    QVBoxLayout* m_windowLayout;
+    QTabWidget* m_tabs;
+    SearchBar* m_searchBar;
 
-  bool x11EventFilter(XEvent* event);
+    // FIXME: temporary hack until we support list of current projects
+    Project* m_project;
+
+    bool x11EventFilter(XEvent* event);
 };
 
 }

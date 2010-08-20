@@ -84,9 +84,17 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
             return true;
         }
 
+        if (keyEvent->key() == Qt::Key_L && keyEvent->modifiers() & Qt::ControlModifier) {
+            PeceraApplication::getApplication().focusSearchBar();
+            return true;
+        }
+
+        if (keyEvent->key() == Qt::Key_Escape) {
+            hide();
+        }
+
         m_bar->setFocus();
         m_bar->event(event);
-        hide();
     }
 
     return false;
@@ -212,8 +220,9 @@ void SuggestionBox::searchBarChanged(const QString& string)
     if (!m_shouldStartNewSearchWhenLineEditChanges)
         return;
 
-    if (m_searchTask)
+    if (m_searchTask) {
         m_searchTask->stop();
+    }
 
     if (string.isNull() || string.isEmpty()) {
         hide();
@@ -232,6 +241,8 @@ int SuggestionBox::getLineHeight()
 
 void SuggestionBox::returned()
 {
+    hide();
+
     QFile targetFile(m_project->getAbsolutePath(m_bar->text()));
     if (!targetFile.exists())
         return;
