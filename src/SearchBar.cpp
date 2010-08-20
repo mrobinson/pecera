@@ -1,23 +1,26 @@
-#include <sys/stat.h>
-
+#include "Project.h"
+#include "SearchBar.h"
+#include "SuggestionBox.h"
+#include "TabbedProcess.h"
+#include <QFile>
 #include <QProcess>
 #include <QTabWidget>
 #include <QStringList>
 #include <QX11EmbedContainer>
-
-#include "SearchBar.h"
-#include "SuggestionBox.h"
-#include "TabbedProcess.h"
+#include <sys/stat.h>
 
 namespace Pecera
 {
 
-SearchBar::SearchBar(QWidget* parent)
+SearchBar::SearchBar(Project* project, QWidget* parent)
     : QLineEdit(parent)
-    , m_suggestionBox(new SuggestionBox(this))
+    , m_project(project)
+    , m_suggestionBox(new SuggestionBox(this, project))
 {
     connect(this, SIGNAL(textChanged(const QString&)),
-        m_suggestionBox, SLOT(lineEditChanged(const QString&)));
+        m_suggestionBox, SLOT(searchBarChanged(const QString&)));
+    connect(this, SIGNAL(returnPressed()),
+        this, SLOT(returned()));
     QLineEdit::resize(600, sizeHint().height());
 }
 
@@ -28,16 +31,16 @@ SearchBar::~SearchBar()
 
 void SearchBar::returned()
 {
-  struct stat statStruct;
+    QFile targetFile(m_project->getAbsolutePath(this->text()));
+    if (!targetFile.exists())
+        return;
 
-  if(stat(this->text().toStdString().c_str(), &statStruct) == 0) {
-    printf("file exists\n");    
     TabbedProcess* tabbedProcess = new TabbedProcess(this->groupBox);
     tabbedProcess->setTabBar(tabs);
 
     QStringList* arguments = new QStringList();
     *arguments << "-embed" << QString::number(tabbedProcess->winId());
-    *arguments << "-e" << "vim" << this->text();
+    *arguments << "-e" << "vim" << targetFile.fileName();
     tabbedProcess->setCommand(new QString("/usr/bin/urxvt"));
     tabbedProcess->setArguments(arguments);
 
@@ -49,7 +52,6 @@ void SearchBar::returned()
     tabbedProcess->setCommand(new QString("/usr/bin/emacs-snapshot"));
     tabbedProcess->setArguments(arguments);
     */
-  }
 }
 
 }

@@ -16,9 +16,8 @@ class SuggestionBox : public QFrame, public SearchSubscriber
     Q_OBJECT
 
 public:
-    SuggestionBox(SearchBar* bar);
+    SuggestionBox(SearchBar*, Project*);
     ~SuggestionBox();
-    void setProject(Project* project) { m_project = project; }
     virtual bool newSearchResult(SearchTask*);
     virtual void searchComplete(SearchTask*);
     virtual bool eventFilter(QObject*, QEvent*);
@@ -27,7 +26,7 @@ signals:
     void forcePaint();
 
 public slots:
-    void lineEditChanged(const QString& string);
+    void searchBarChanged(const QString& string);
     void paintTimeout();
 
 protected:

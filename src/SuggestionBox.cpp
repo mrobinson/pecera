@@ -12,7 +12,7 @@
 namespace Pecera
 {
 
-SuggestionBox::SuggestionBox(SearchBar* bar)
+SuggestionBox::SuggestionBox(SearchBar* bar, Project* project)
     : QFrame(0)
     , m_bar(bar)
     , m_searchTask(0)
@@ -22,7 +22,7 @@ SuggestionBox::SuggestionBox(SearchBar* bar)
     , m_boldFont(font())
     , m_normalFontMetrics(0)
     , m_boldFontMetrics(0)
-    , m_project(0)
+    , m_project(project)
     , m_paintTimer(this)
     , m_backBuffer(1000, 1000)
 {
@@ -206,7 +206,7 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
 
 }
 
-void SuggestionBox::lineEditChanged(const QString& string)
+void SuggestionBox::searchBarChanged(const QString& string)
 {
     if (!m_shouldStartNewSearchWhenLineEditChanges)
         return;

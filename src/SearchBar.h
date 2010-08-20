@@ -14,12 +14,13 @@ namespace Pecera
 {
 
 class SuggestionBox;
+class Project;
 class SearchBar : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    SearchBar(QWidget* parent = 0);
+    SearchBar(Project*, QWidget* parent=0);
     ~SearchBar();
 
     SuggestionBox* suggestionBox() { return m_suggestionBox; }
@@ -30,6 +31,7 @@ public slots:
     void returned();
 
 private:
+    Project* m_project;
     SuggestionBox* m_suggestionBox;
 };
 

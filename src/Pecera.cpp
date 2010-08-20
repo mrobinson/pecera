@@ -15,35 +15,32 @@
 
 int main(int argc, char *argv[])
 {
-  QString projectName("slideshow");
-  QDir projectDir("/home/martin/app/titanium_desktop");
-  Pecera::Project p(projectName, projectDir);
-  p.scanRoot(); 
-  p.save(); 
+    QString projectName("slideshow");
+    QDir projectDir("/home/martin/app/titanium_desktop");
+    Pecera::Project project(projectName, projectDir);
+    project.scanRoot(); 
+    project.save(); 
 
-  Pecera::PeceraApplication& app = Pecera::PeceraApplication::initializeApplication(argc, argv);
-  
-  QGroupBox groupBox;
-  QVBoxLayout layout;
+    Pecera::PeceraApplication& app = Pecera::PeceraApplication::initializeApplication(argc, argv);
 
-  app.setLocationBarWindow(&groupBox);
-  app.reloadLocationShortcut();
+    QGroupBox groupBox;
+    QVBoxLayout layout;
 
-  QTabWidget tabs;
-  Pecera::SearchBar searchBar;
-  searchBar.tabs = &tabs;
-  searchBar.groupBox = &groupBox;
-  searchBar.connect(&searchBar, SIGNAL(returnPressed()),
-		    &searchBar, SLOT(returned()));
-  searchBar.suggestionBox()->setProject(&p);
+    app.setLocationBarWindow(&groupBox);
+    app.reloadLocationShortcut();
 
-  layout.addWidget(&searchBar);
-  layout.addWidget(&tabs);
+    QTabWidget tabs;
+    Pecera::SearchBar searchBar(&project);
+    searchBar.tabs = &tabs;
+    searchBar.groupBox = &groupBox;
 
-  groupBox.setLayout(&layout);
-  groupBox.show();
-  groupBox.setGeometry(5, 5, 800, 600);
+    layout.addWidget(&searchBar);
+    layout.addWidget(&tabs);
 
-  return app.exec();
+    groupBox.setLayout(&layout);
+    groupBox.show();
+    groupBox.setGeometry(5, 5, 800, 600);
+
+    return app.exec();
 }
 
