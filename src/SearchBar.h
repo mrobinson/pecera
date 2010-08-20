@@ -27,9 +27,6 @@ public:
     QTabWidget* tabs;
     QGroupBox* groupBox;
 
-public slots:
-    void returned();
-
 private:
     Project* m_project;
     SuggestionBox* m_suggestionBox;

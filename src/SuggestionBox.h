@@ -27,6 +27,7 @@ signals:
 
 public slots:
     void searchBarChanged(const QString& string);
+    void returned();
     void paintTimeout();
 
 protected:

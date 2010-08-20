@@ -3,6 +3,7 @@
 #include "SearchBar.h"
 #include "SearchProvider.h"
 #include "SuggestionBox.h"
+#include "TabbedProcess.h"
 #include <QApplication>
 #include <QPainter>
 #include <QPaintEvent>
@@ -228,5 +229,35 @@ int SuggestionBox::getLineHeight()
 {
     return m_normalFontMetrics->height() + (SUGGESTION_LINE_PADDING * 2);
 }
+
+void SuggestionBox::returned()
+{
+    QFile targetFile(m_project->getAbsolutePath(m_bar->text()));
+    if (!targetFile.exists())
+        return;
+
+    if (m_searchTask)
+        m_searchTask->stop();
+    m_activeIndex = 0;
+
+    TabbedProcess* tabbedProcess = new TabbedProcess(m_bar->groupBox);
+    tabbedProcess->setTabBar(m_bar->tabs);
+
+    QStringList* arguments = new QStringList();
+    *arguments << "-embed" << QString::number(tabbedProcess->winId());
+    *arguments << "-e" << "vim" << targetFile.fileName();
+    tabbedProcess->setCommand(new QString("/usr/bin/urxvt"));
+    tabbedProcess->setArguments(arguments);
+
+    /*
+    QStringList* arguments = new QStringList();
+    *arguments << "--parent-id" << QString::number(tabbedProcess->winId());
+    *arguments << "-Q";
+    *arguments << "--file" << this->text();
+    tabbedProcess->setCommand(new QString("/usr/bin/emacs-snapshot"));
+    tabbedProcess->setArguments(arguments);
+    */
+}
+
 
 }
