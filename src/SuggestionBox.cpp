@@ -90,6 +90,7 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
         }
 
         if (keyEvent->key() == Qt::Key_Escape) {
+            m_searchTask->stop();
             hide();
         }
 
