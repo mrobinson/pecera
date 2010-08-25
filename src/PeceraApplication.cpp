@@ -59,17 +59,18 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
                   << std::endl;
             QApplication::exit(EXIT_FAILURE);
         }
-        this->m_project = NULL;
+
         int projectNameIndex = query.record().indexOf("name");
         int projectPathIndex = query.record().indexOf("path");
         while (query.next()) {
             std::cout << query.value(projectPathIndex).toString().toStdString()
                   << std::endl;
-            m_project = new Project(query.value(projectNameIndex).toString(), QDir(query.value(projectPathIndex).toString()));
+            m_projects.append(new Project(query.value(projectNameIndex).toString(), QDir(query.value(projectPathIndex).toString())));
             break;
         }
         db.close();
-        if(this->m_project == NULL) {
+
+        if(this->m_projects.size() == 0) {
             std::cerr << "sqlite3 " << dbPath.toStdString()
                   << std::endl
                   << " INSERT INTO projects (name, description, path) VALUES('yourprojectname', 'yourdescription', 'yourpath')"
@@ -78,13 +79,13 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
         }
     }
 
-    QThreadPool::globalInstance()->start(new LoadProjectTask(m_project));
+    QThreadPool::globalInstance()->start(new LoadProjectTask(m_projects.at(0)));
 
     m_window = new QGroupBox();
     QVBoxLayout layout;
 
     m_windowLayout = new QVBoxLayout();
-    m_searchBar = new SearchBar(m_project);
+    m_searchBar = new SearchBar(m_projects.at(0));
     m_windowLayout->addWidget(m_searchBar);
     m_tabs = new QTabWidget();
     m_windowLayout->addWidget(m_tabs);
@@ -103,7 +104,11 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
 PeceraApplication::~PeceraApplication()
 {
     m_window->close();
-    delete m_project;
+
+    QList<Project*>::const_iterator i = m_projects.begin();
+    while (i != m_projects.end())
+        delete *i;
+
     delete m_tabs;
     delete m_searchBar;
     delete m_windowLayout;

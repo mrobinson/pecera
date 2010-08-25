@@ -36,8 +36,7 @@ private:
     QTabWidget* m_tabs;
     SearchBar* m_searchBar;
 
-    // FIXME: temporary hack until we support list of current projects
-    Project* m_project;
+    QList<Project*> m_projects;
 
     bool x11EventFilter(XEvent* event);
 };
