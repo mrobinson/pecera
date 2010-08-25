@@ -35,7 +35,24 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
     , m_locationBarShortcut(0)
 {
     this->setApplicationName(QString("pecera"));
-        
+}
+
+PeceraApplication::~PeceraApplication()
+{
+    QList<Project*>::const_iterator i = m_projects.begin();
+    while (i != m_projects.end())
+        delete *i;
+
+    if (m_window)
+        m_window->close();
+    delete m_tabs;
+    delete m_searchBar;
+    delete m_windowLayout;
+    delete m_window;
+}
+
+int PeceraApplication::exec()
+{
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
 
     QDir projectDir = QDir(this->getGlobalStorageLocation());
@@ -48,13 +65,13 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
         if(!query.exec(QString("CREATE TABLE IF NOT EXISTS projects (name TEST, description TEXT, path TEXT, CONSTRAINT projects_pkey PRIMARY KEY (name))"))) {
             std::cout << query.lastError().text().toStdString() 
                   << std::endl;
-            QApplication::exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
 
         if(!query.exec("SELECT * FROM projects")) {
             std::cout << query.lastError().text().toStdString() 
                   << std::endl;
-            QApplication::exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
 
         int projectNameIndex = query.record().indexOf("name");
@@ -72,7 +89,7 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
                   << std::endl
                   << " INSERT INTO projects (name, description, path) VALUES('yourprojectname', 'yourdescription', 'yourpath')"
                   << std::endl;
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
@@ -93,23 +110,9 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
 
     m_searchBar->tabs = m_tabs;
     m_searchBar->groupBox = m_window;
-
     reloadLocationShortcut();
 
-}
-
-PeceraApplication::~PeceraApplication()
-{
-    m_window->close();
-
-    QList<Project*>::const_iterator i = m_projects.begin();
-    while (i != m_projects.end())
-        delete *i;
-
-    delete m_tabs;
-    delete m_searchBar;
-    delete m_windowLayout;
-    delete m_window;
+    return QApplication::exec();
 }
 
 PeceraApplication* PeceraApplication::instance()

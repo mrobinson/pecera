@@ -21,6 +21,7 @@ public:
     static PeceraApplication* instance();
     PeceraApplication(int& argc, char** argv);
     ~PeceraApplication();
+    int exec();
     void reloadLocationShortcut();
 
     QString getGlobalStorageLocation();
@@ -35,7 +36,6 @@ private:
     QVBoxLayout* m_windowLayout;
     QTabWidget* m_tabs;
     SearchBar* m_searchBar;
-
     QList<Project*> m_projects;
 
     bool x11EventFilter(XEvent* event);
