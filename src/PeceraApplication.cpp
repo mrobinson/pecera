@@ -1,6 +1,11 @@
+// -*- Mode: C; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 #include "PeceraApplication.h"
 #include "Project.h"
 #include <iostream>
+
+#include <QVariant>
+
 #include <QApplication>
 #include <QGroupBox>
 #include <QLineEdit>
@@ -15,6 +20,13 @@
 #include "SuggestionBox.h"
 #include <X11/Xlib.h>
 
+#include <QDesktopServices>
+
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlQuery>
+#include <QtSql/QSqlError>
+#include <QtSql/QSqlRecord>
+
 namespace Pecera {
 
 static PeceraApplication* g_application = 0;
@@ -24,10 +36,52 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
 {
     g_application = this;
 
-    // FIXME: Need to get this data from configuration soon.
-    m_project = new Project(QString("slideshow"), QDir("/home/martin/app/titanium_desktop"));
-    m_project->scanRoot(); 
-    m_project->save(); 
+            this->setApplicationName(QString("pecera"));
+            
+            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+
+            QDir projectDir = QDir(this->getGlobalStorageLocation());
+            projectDir.mkpath(projectDir.absolutePath());
+            
+            QString dbPath =  
+                this->getGlobalStorageLocation().
+                append(QString("/pecera.db")); 
+            db.setDatabaseName(dbPath);
+
+            if(db.open()) {
+                QSqlQuery query(db);
+                if(!query.exec(QString("CREATE TABLE IF NOT EXISTS projects (name TEST, description TEXT, path TEXT, CONSTRAINT projects_pkey PRIMARY KEY (name))"))) {
+                    std::cout << query.lastError().text().toStdString() 
+                              << std::endl;
+                    QApplication::exit(EXIT_FAILURE);
+                }
+
+                if(!query.exec("SELECT * FROM projects")) {
+                    std::cout << query.lastError().text().toStdString() 
+                              << std::endl;
+                    QApplication::exit(EXIT_FAILURE);
+                }
+                this->m_project = NULL;
+                int projectNameIndex = query.record().indexOf("name");
+                int projectPathIndex = query.record().indexOf("path");
+                while (query.next()) {
+                    std::cout << query.value(projectPathIndex).toString().toStdString()
+                              << std::endl;
+                    m_project = new Project(query.value(projectNameIndex).toString(), QDir(query.value(projectPathIndex).toString()));
+                    m_project->scanRoot(); 
+                    m_project->save(); 
+                    break;
+                }
+                db.close();
+                if(this->m_project == NULL) {
+                    std::cerr << "sqlite3 " << dbPath.toStdString()
+                              << std::endl
+                              << " INSERT INTO projects (name, description, path) VALUES('yourprojectname', 'yourdescription', 'yourpath')"
+                              << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
+
 
     m_window = new QGroupBox();
     QVBoxLayout layout;
@@ -77,13 +131,26 @@ void PeceraApplication::reloadLocationShortcut()
         this, SLOT(focusSearchBar()));
 }
 
+
+QString PeceraApplication::getGlobalStorageLocation() {
+    return QDesktopServices::storageLocation
+        (QDesktopServices::DataLocation);
+}
+
+QString PeceraApplication::getProjectStorageLocation() {
+    return QDesktopServices::storageLocation
+        (QDesktopServices::DataLocation).append(QString("/projects"));
+}
+
 void PeceraApplication::focusSearchBar()
 {
     m_searchBar->selectAll();
     m_searchBar->setFocus();
 }
 
-bool PeceraApplication::x11EventFilter(XEvent* event) {
+bool PeceraApplication::x11EventFilter(XEvent* event) 
+{
+    /*
   Display *display = QX11Info::display();
 
   if(event->type == KeyPress || event->type == KeyRelease) {
@@ -96,7 +163,7 @@ bool PeceraApplication::x11EventFilter(XEvent* event) {
       std::cout << "XEMBED" << std::endl;
     }
   }
-
+    */
   QApplication::x11EventFilter(event);
 }
 

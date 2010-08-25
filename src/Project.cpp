@@ -1,9 +1,13 @@
+// -*- Mode: C; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
 #include "Project.h"
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QMutexLocker>
 #include <QStack>
 #include <sqlite3.h>
+
+#include "PeceraApplication.h"
 
 namespace Pecera
 {
@@ -107,7 +111,7 @@ static int fileReadFromStorageCallback(void* data, int columnCount, char** resul
 
 void Project::load()
 {
-    QDir storageLocation(QDesktopServices::storageLocation(QDesktopServices::DataLocation));
+    QDir storageLocation(PeceraApplication::getApplication().getProjectStorageLocation());
     if (!storageLocation.exists())
         return;
 
@@ -184,7 +188,7 @@ static void handleSQLiteError(Project* project, int rc, sqlite3* database, char*
 
 void Project::save()
 {
-    QDir storageLocation(QDesktopServices::storageLocation(QDesktopServices::DataLocation));
+    QDir storageLocation(PeceraApplication::getApplication().getProjectStorageLocation());
     if (!storageLocation.exists()) {
         if (!storageLocation.mkpath(storageLocation.absolutePath()))
             return;

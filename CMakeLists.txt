@@ -5,8 +5,9 @@ find_package(PkgConfig)
 find_package(X11)
 pkg_check_modules(CPPUNIT cppunit)
 pkg_check_modules(SQLITE sqlite3)
+pkg_check_modules(QTSQL QtSql)
 
-include_directories(${CPPUNIT_INCLUDES} ${SQLITE_INCLUDES})
+include_directories(${CPPUNIT_INCLUDES} ${SQLITE_INCLUDES} ${QTSQL_INCLUDES})
 include(${QT_USE_FILE})
 
 # Pecera
@@ -30,7 +31,7 @@ set(pecera_moc_classes
 QT_WRAP_CPP(pecera pecera_moc_files ${pecera_moc_classes})
 
 add_executable(pecera ${pecera_sources} ${pecera_moc_files})
-target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${X11_LIBRARIES})
+target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${QTSQL_LIBRARIES} ${X11_LIBRARIES})
 
 # Unit tests
 set(unitTestsSources

@@ -69,10 +69,8 @@ namespace Pecera
   }
 
   void TabbedProcess::started() {
-    sleep(5);
-    std::cout << "started..." << std::endl;
     PeceraApplication& app = PeceraApplication::getApplication();
-    app.reloadLocationShortcut();
+    //app.reloadLocationShortcut();
   }
 
   void TabbedProcess::finished(int exitCode, QProcess::ExitStatus exitStatus) {

@@ -23,6 +23,9 @@ public:
     ~PeceraApplication();
     void reloadLocationShortcut();
 
+    QString getGlobalStorageLocation();
+    QString getProjectStorageLocation();
+
 public slots:
     void focusSearchBar();
 
