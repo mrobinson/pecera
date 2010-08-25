@@ -61,5 +61,19 @@ private:
     NaiveSearchProvider m_filenameSearchProvider;
 };
 
+class LoadProjectTask : public QRunnable
+{
+public:
+    LoadProjectTask(Project* project)
+        : m_project(project)
+    {
+    }
+
+    void run();
+
+private:
+    Project* m_project;
+};
+
 }
 #endif

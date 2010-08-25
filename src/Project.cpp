@@ -283,4 +283,10 @@ void Project::performFilenameSearch(SearchTask* task)
     m_filenameSearchProvider.scheduleSearch(task);
 }
 
+void LoadProjectTask::run()
+{
+    m_project->load();
+    m_project->scanRoot();
+}
+
 }

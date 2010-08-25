@@ -13,6 +13,7 @@
 #include <QProcess>
 #include <QShortcut>
 #include <QTabWidget>
+#include <QThreadPool>
 #include <QVBoxLayout>
 #include <QX11EmbedContainer>
 #include <QX11Info>
@@ -36,52 +37,51 @@ PeceraApplication::PeceraApplication(int& argc, char** argv)
 {
     g_application = this;
 
-            this->setApplicationName(QString("pecera"));
-            
-            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+        this->setApplicationName(QString("pecera"));
+        
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
 
-            QDir projectDir = QDir(this->getGlobalStorageLocation());
-            projectDir.mkpath(projectDir.absolutePath());
-            
-            QString dbPath =  
-                this->getGlobalStorageLocation().
-                append(QString("/pecera.db")); 
-            db.setDatabaseName(dbPath);
+        QDir projectDir = QDir(this->getGlobalStorageLocation());
+        projectDir.mkpath(projectDir.absolutePath());
+        
+        QString dbPath =  
+        this->getGlobalStorageLocation().
+        append(QString("/pecera.db")); 
+        db.setDatabaseName(dbPath);
 
-            if(db.open()) {
-                QSqlQuery query(db);
-                if(!query.exec(QString("CREATE TABLE IF NOT EXISTS projects (name TEST, description TEXT, path TEXT, CONSTRAINT projects_pkey PRIMARY KEY (name))"))) {
-                    std::cout << query.lastError().text().toStdString() 
-                              << std::endl;
-                    QApplication::exit(EXIT_FAILURE);
-                }
-
-                if(!query.exec("SELECT * FROM projects")) {
-                    std::cout << query.lastError().text().toStdString() 
-                              << std::endl;
-                    QApplication::exit(EXIT_FAILURE);
-                }
-                this->m_project = NULL;
-                int projectNameIndex = query.record().indexOf("name");
-                int projectPathIndex = query.record().indexOf("path");
-                while (query.next()) {
-                    std::cout << query.value(projectPathIndex).toString().toStdString()
-                              << std::endl;
-                    m_project = new Project(query.value(projectNameIndex).toString(), QDir(query.value(projectPathIndex).toString()));
-                    m_project->scanRoot(); 
-                    m_project->save(); 
-                    break;
-                }
-                db.close();
-                if(this->m_project == NULL) {
-                    std::cerr << "sqlite3 " << dbPath.toStdString()
-                              << std::endl
-                              << " INSERT INTO projects (name, description, path) VALUES('yourprojectname', 'yourdescription', 'yourpath')"
-                              << std::endl;
-                    exit(EXIT_FAILURE);
-                }
+        if(db.open()) {
+            QSqlQuery query(db);
+            if(!query.exec(QString("CREATE TABLE IF NOT EXISTS projects (name TEST, description TEXT, path TEXT, CONSTRAINT projects_pkey PRIMARY KEY (name))"))) {
+                std::cout << query.lastError().text().toStdString() 
+                      << std::endl;
+                QApplication::exit(EXIT_FAILURE);
             }
 
+            if(!query.exec("SELECT * FROM projects")) {
+                std::cout << query.lastError().text().toStdString() 
+                      << std::endl;
+                QApplication::exit(EXIT_FAILURE);
+            }
+            this->m_project = NULL;
+            int projectNameIndex = query.record().indexOf("name");
+            int projectPathIndex = query.record().indexOf("path");
+            while (query.next()) {
+                std::cout << query.value(projectPathIndex).toString().toStdString()
+                      << std::endl;
+                m_project = new Project(query.value(projectNameIndex).toString(), QDir(query.value(projectPathIndex).toString()));
+                break;
+        }
+        db.close();
+        if(this->m_project == NULL) {
+            std::cerr << "sqlite3 " << dbPath.toStdString()
+                  << std::endl
+                  << " INSERT INTO projects (name, description, path) VALUES('yourprojectname', 'yourdescription', 'yourpath')"
+                  << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    QThreadPool::globalInstance()->start(new LoadProjectTask(m_project));
 
     m_window = new QGroupBox();
     QVBoxLayout layout;
