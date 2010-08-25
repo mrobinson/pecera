@@ -111,7 +111,7 @@ static int fileReadFromStorageCallback(void* data, int columnCount, char** resul
 
 void Project::load()
 {
-    QDir storageLocation(PeceraApplication::getApplication().getProjectStorageLocation());
+    QDir storageLocation(PeceraApplication::instance()->getProjectStorageLocation());
     if (!storageLocation.exists())
         return;
 
@@ -188,7 +188,7 @@ static void handleSQLiteError(Project* project, int rc, sqlite3* database, char*
 
 void Project::save()
 {
-    QDir storageLocation(PeceraApplication::getApplication().getProjectStorageLocation());
+    QDir storageLocation(PeceraApplication::instance()->getProjectStorageLocation());
     if (!storageLocation.exists()) {
         if (!storageLocation.mkpath(storageLocation.absolutePath()))
             return;

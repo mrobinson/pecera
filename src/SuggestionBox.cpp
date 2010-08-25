@@ -85,7 +85,7 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
         }
 
         if (keyEvent->key() == Qt::Key_L && keyEvent->modifiers() & Qt::ControlModifier) {
-            PeceraApplication::getApplication().focusSearchBar();
+            PeceraApplication::instance()->focusSearchBar();
             return true;
         }
 

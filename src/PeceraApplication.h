@@ -18,7 +18,7 @@ class PeceraApplication : public QApplication {
     Q_OBJECT
 
 public:
-    static PeceraApplication& getApplication();
+    static PeceraApplication* instance();
     PeceraApplication(int& argc, char** argv);
     ~PeceraApplication();
     void reloadLocationShortcut();

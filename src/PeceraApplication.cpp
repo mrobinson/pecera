@@ -30,13 +30,10 @@
 
 namespace Pecera {
 
-static PeceraApplication* g_application = 0;
 PeceraApplication::PeceraApplication(int& argc, char** argv)
     : QApplication(argc, argv)
     , m_locationBarShortcut(0)
 {
-    g_application = this;
-
     this->setApplicationName(QString("pecera"));
         
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -115,9 +112,9 @@ PeceraApplication::~PeceraApplication()
     delete m_window;
 }
 
-PeceraApplication& PeceraApplication::getApplication()
+PeceraApplication* PeceraApplication::instance()
 {
-    return *g_application;
+    return static_cast<PeceraApplication*>(QApplication::instance());
 }
 
 void PeceraApplication::reloadLocationShortcut()
