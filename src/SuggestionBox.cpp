@@ -92,7 +92,8 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
         }
 
         if (keyEvent->key() == Qt::Key_Escape) {
-            m_searchTask->stop();
+            if (m_searchTask)
+                m_searchTask->stop();
             hide();
         }
 
@@ -130,6 +131,11 @@ void SuggestionBox::searchComplete(SearchTask* task)
 
 void SuggestionBox::paintTimeout()
 {
+    if (!m_searchTask) {
+        hide();
+        return;
+    }
+
     int size = 0;
     {
         QMutexLocker lock(m_searchTask->resultsMutex());
@@ -155,7 +161,7 @@ void SuggestionBox::paintTimeout()
 
 void SuggestionBox::paintEvent(QPaintEvent* event)
 {
-    if (isHidden())
+    if (isHidden() || !m_searchTask)
         return;
 
     QPalette palette(QApplication::palette());
@@ -225,6 +231,7 @@ void SuggestionBox::searchBarChanged(const QString& string)
 
     if (m_searchTask) {
         m_searchTask->stop();
+        m_searchTask = 0;
     }
 
     if (string.isNull() || string.isEmpty()) {
@@ -246,11 +253,13 @@ void SuggestionBox::returned()
 {
     hide();
 
-    if (m_searchTask)
+    if (m_searchTask) {
         m_searchTask->stop();
+        m_searchTask = 0;
+    }
+
     m_activeIndex = 0;
     m_activeResult->executeAction();
 }
-
 
 }
