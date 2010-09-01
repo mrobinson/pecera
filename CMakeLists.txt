@@ -13,6 +13,7 @@ include(${QT_USE_FILE})
 # Pecera
 SET(CMAKE_BUILD_TYPE Debug)
 set(pecera_sources
+    src/FilenameSearchProvider.cpp
     src/Project.cpp
     src/SearchBar.cpp
     src/SuggestionBox.cpp
@@ -35,9 +36,17 @@ target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${QTSQL_LIBRARI
 
 # Unit tests
 set(unitTestsSources
+    src/FilenameSearchProvider.cpp
+    src/Project.cpp
+    src/SearchBar.cpp
+    src/SuggestionBox.cpp
+    src/SearchProvider.cpp
+    src/TabbedProcess.cpp
+    src/PeceraApplication.cpp
     src/UnitTest.cpp
-    src/ResultTest.cpp
 )
-add_executable(unittests ${unitTestsSources})
-target_link_libraries(unittests ${QT_LIBRARIES} ${CPPUNIT_LDFLAGS})
+
+QT_WRAP_CPP(unittests pecera_moc_files ${pecera_moc_classes})
+add_executable(unittests ${unitTestsSources} ${pecera_moc_files})
+target_link_libraries(unittests ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${QTSQL_LIBRARIES} ${X11_LIBRARIES} ${CPPUNIT_LDFLAGS})
 

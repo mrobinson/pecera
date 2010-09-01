@@ -1,6 +1,7 @@
 #ifndef PeceraApplication_h
 #define PeceraApplication_h
 
+#include "FilenameSearchProvider.h"
 #include <QApplication>
 #include <QObject>
 
@@ -11,8 +12,9 @@ class QTabWidget;
 
 namespace Pecera {
 
-class SearchBar;
 class Project;
+class SearchBar;
+class SearchTask;
 
 class PeceraApplication : public QApplication {
     Q_OBJECT
@@ -21,11 +23,16 @@ public:
     static PeceraApplication* instance();
     PeceraApplication(int& argc, char** argv);
     ~PeceraApplication();
+
+    const QList<Project*>& projects() { return m_projects; }
+    QGroupBox* window() { return m_window; }
+    QTabWidget* tabs() { return m_tabs; }
+
     int exec();
     void reloadLocationShortcut();
-
     QString getGlobalStorageLocation();
     QString getProjectStorageLocation();
+    void performFilenameSearch(SearchTask*);
 
 public slots:
     void focusSearchBar();
@@ -37,6 +44,7 @@ private:
     QTabWidget* m_tabs;
     SearchBar* m_searchBar;
     QList<Project*> m_projects;
+    FilenameSearchProvider m_filenameSearchProvider;
 
     bool x11EventFilter(XEvent* event);
 };

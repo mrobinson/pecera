@@ -11,10 +11,9 @@
 namespace Pecera
 {
 
-SearchBar::SearchBar(Project* project, QWidget* parent)
+SearchBar::SearchBar(QWidget* parent)
     : QLineEdit(parent)
-    , m_project(project)
-    , m_suggestionBox(new SuggestionBox(this, project))
+    , m_suggestionBox(new SuggestionBox(this))
 {
     connect(this, SIGNAL(textChanged(const QString&)),
         m_suggestionBox, SLOT(searchBarChanged(const QString&)));

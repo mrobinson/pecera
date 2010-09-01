@@ -16,7 +16,7 @@ class SuggestionBox : public QFrame, public SearchSubscriber
     Q_OBJECT
 
 public:
-    SuggestionBox(SearchBar*, Project*);
+    SuggestionBox(SearchBar*);
     ~SuggestionBox();
     virtual bool newSearchResult(SearchTask*);
     virtual void searchComplete(SearchTask*);
@@ -40,6 +40,7 @@ private:
     SearchBar* m_bar;
     SearchTask* m_searchTask;
     unsigned int m_activeIndex;
+    Result* m_activeResult;
 
     // TODO: Find a better way to do this.
     bool m_shouldStartNewSearchWhenLineEditChanges;
@@ -47,7 +48,6 @@ private:
     QFont m_boldFont;
     QFontMetrics* m_normalFontMetrics;
     QFontMetrics* m_boldFontMetrics;
-    Project* m_project;
     QTimer m_paintTimer;
     QPixmap m_backBuffer;
 

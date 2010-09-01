@@ -51,14 +51,12 @@ public:
     void save();
     void load();
     void reportError(const QString&);
-    void performFilenameSearch(SearchTask*);
 
 private:
     QString m_name;
     QDir m_root;
     QHash<QString, File*> m_files;
     QMutex m_filesMutex;
-    NaiveSearchProvider m_filenameSearchProvider;
 };
 
 class LoadProjectTask : public QRunnable

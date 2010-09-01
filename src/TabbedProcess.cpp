@@ -1,8 +1,7 @@
-#include <cstdio>
-
 #include "PeceraApplication.h"
+#include "SearchProvider.h"
 #include "TabbedProcess.h"
-
+#include <cstdio>
 #include <unistd.h>
 
 // TODO
@@ -14,35 +13,22 @@
 
 namespace Pecera
 {
-  TabbedProcess::TabbedProcess(QWidget* parent) : QX11EmbedContainer(parent) {
-    this->tabBar = 0;
-    this->process = 0;
-    this->container = 0;
-    this->command = 0;
-    this->arguments = 0;
-    this->title = new QString("title");
-    this->show();
-  }
+TabbedProcess::TabbedProcess(QTabWidget* tabs, QWidget* parent)
+    : QX11EmbedContainer(parent)
+    , m_tabWidget(tabs)
+    , process(0)
+    , container(0)
+    , command(0)
+    , arguments(0)
+    , title(new QString("title"))
+{
+    m_tabWidget->addTab(this, *this->title);
+    show();
+}
 
   TabbedProcess::~TabbedProcess() {
     // TODO:
     // if(process != 0) delete process;
-  }
-
-  void TabbedProcess::setTabBar(QTabWidget* tabBar) {
-    if(this->tabBar == tabBar) return;
-    if(this->tabBar != 0) {
-      for(int i = 0; i < this->tabBar->count(); i++) {
-	if(this->tabBar->widget(i) == this) {
-	  this->tabBar->removeTab(i);
-	  break;
-	}
-      }
-    }
-    this->tabBar = tabBar;
-    if(this->tabBar != 0) {
-      this->index = this->tabBar->addTab(this, *this->title);
-    }
   }
 
   void TabbedProcess::setCommand(const QString* command) {
@@ -63,7 +49,7 @@ namespace Pecera
 	    this, SLOT(finished(int, QProcess::ExitStatus)));
     connect(this->process, SIGNAL(started()),
 	    this, SLOT(started()));
-    this->tabBar->setCurrentIndex(this->index);
+    m_tabWidget->setCurrentIndex(this->index);
     this->process->start(*this->command, *this->arguments);
     
   }
@@ -75,6 +61,10 @@ namespace Pecera
     printf("finished\n");
     this->setCommand(0);
     this->setArguments(0);
-    this->setTabBar(0);
+
+    int ourIndex = m_tabWidget->indexOf(this);
+    if (ourIndex != -1)
+        m_tabWidget->removeTab(ourIndex);
+    m_tabWidget = 0;
   }
 }
