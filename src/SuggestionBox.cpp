@@ -117,6 +117,9 @@ bool SuggestionBox::newSearchResult(SearchTask* task)
     if (task != m_searchTask)
         return false;
 
+    if (!m_activeResult)
+        setActiveIndex(0);
+
     return m_searchTask->results().size() <= 10;
 }
 
@@ -171,9 +174,6 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     int lineHeight = getLineHeight();
     int baselineOffset = (lineHeight / 2) + (m_normalFontMetrics->ascent() / 2);
     int currentLineOffset = 0;
-
-    painter.drawText(0, baselineOffset, "Full text search...");
-    currentLineOffset += lineHeight;
 
     QMutexLocker lock(m_searchTask->resultsMutex());
     for (int i = 0; i < m_searchTask->results().size(); i++) {
@@ -259,7 +259,8 @@ void SuggestionBox::returned()
     }
 
     m_activeIndex = 0;
-    m_activeResult->executeAction();
+    if (m_activeResult)
+        m_activeResult->executeAction();
 }
 
 }

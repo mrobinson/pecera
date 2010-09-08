@@ -1,6 +1,7 @@
 // -*- Mode: C; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
 #include "FilenameSearchProvider.h"
+#include "FullTextSearchProvider.h"
 #include "PeceraApplication.h"
 #include "Project.h"
 #include "SearchBar.h"
@@ -144,25 +145,12 @@ void PeceraApplication::focusSearchBar()
 
 bool PeceraApplication::x11EventFilter(XEvent* event) 
 {
-    /*
-  Display *display = QX11Info::display();
-
-  if(event->type == KeyPress || event->type == KeyRelease) {
-    //std::cout << event->xkey.keycode << std::endl;
-  }
-  if (event->type == ClientMessage) {
-    std::cout << "ClientMessage" << std::endl;
-    Atom atom = XInternAtom(display, "_XEMBED", FALSE);
-    if(event->xclient.message_type == atom) {
-      std::cout << "XEMBED" << std::endl;
-    }
-  }
-    */
   QApplication::x11EventFilter(event);
 }
 
 void PeceraApplication::performFilenameSearch(SearchTask* task)
 {
+    task->newSearchResult(new FullTextSearchResult(task->query()));
     m_filenameSearchProvider.scheduleSearch(task);
 }
 
