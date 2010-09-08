@@ -51,6 +51,60 @@ PeceraApplication::~PeceraApplication()
     delete m_window;
 }
 
+int PeceraApplication::initApplicationDatabase() {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    QDir projectDir = QDir(this->getGlobalStorageLocation());
+    projectDir.mkpath(projectDir.absolutePath());
+    QString dbPath = this->getGlobalStorageLocation().
+        append(QString("/pecera.db"));
+    db.setDatabaseName(dbPath);
+
+    if(!db.open()) {
+        return false;
+    }
+    
+    QSqlQuery query(db);
+    if(!query.exec(QString("CREATE TABLE IF NOT EXISTS projects (name TEST, description TEXT, path TEXT, CONSTRAINT projects_pkey PRIMARY KEY (name))"))) {
+        std::cout << query.lastError().text().toStdString() 
+                  << std::endl;
+        return false;
+    }
+
+    db.close();
+        
+    return true;
+}
+
+int PeceraApplication::createProject(QString title, QString path) {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    QDir projectDir = QDir(this->getGlobalStorageLocation());
+    projectDir.mkpath(projectDir.absolutePath());
+    QString dbPath = this->getGlobalStorageLocation().
+        append(QString("/pecera.db"));
+    db.setDatabaseName(dbPath);
+
+    if(!db.open()) {
+        return false;
+    }
+    
+    QSqlQuery query(db);
+
+    query.prepare("INSERT INTO projects(name, path) "
+                  "VALUES (?, ?)");
+    query.bindValue(0, title);
+    query.bindValue(1, path);
+
+    if(!query.exec()) {
+        std::cout << query.lastError().text().toStdString() 
+                  << std::endl;
+        return false;
+    }
+    
+    db.close();
+        
+    return true;
+}
+
 int PeceraApplication::exec()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -62,12 +116,6 @@ int PeceraApplication::exec()
 
     if(db.open()) {
         QSqlQuery query(db);
-        if(!query.exec(QString("CREATE TABLE IF NOT EXISTS projects (name TEST, description TEXT, path TEXT, CONSTRAINT projects_pkey PRIMARY KEY (name))"))) {
-            std::cout << query.lastError().text().toStdString() 
-                  << std::endl;
-            return EXIT_FAILURE;
-        }
-
         if(!query.exec("SELECT * FROM projects")) {
             std::cout << query.lastError().text().toStdString() 
                   << std::endl;

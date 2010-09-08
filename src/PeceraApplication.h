@@ -22,6 +22,8 @@ public:
     PeceraApplication(int& argc, char** argv);
     ~PeceraApplication();
     int exec();
+    int initApplicationDatabase();
+    int createProject(QString title, QString path);
     void reloadLocationShortcut();
 
     QString getGlobalStorageLocation();
