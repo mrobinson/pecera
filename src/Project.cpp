@@ -50,7 +50,6 @@ QString File::absolutePath()
 Project::Project(const QString& name, const QDir& root)
     : m_name(name)
     , m_root(root)
-    , m_filenameSearchProvider(this)
 {
 }
 
@@ -276,11 +275,6 @@ void Project::save()
 void Project::reportError(const QString& error)
 {
     fprintf(stderr, "%s\n", error.toUtf8().data());
-}
-
-void Project::performFilenameSearch(SearchTask* task)
-{
-    m_filenameSearchProvider.scheduleSearch(task);
 }
 
 void LoadProjectTask::run()

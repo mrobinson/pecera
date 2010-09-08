@@ -1,4 +1,3 @@
-#include "Project.h"
 #include "Result.h"
 #include "SearchProvider.h"
 #include <QFile>
@@ -6,7 +5,6 @@
 #include <QMutexLocker>
 #include <QPair>
 #include <QString>
-#include <QStringList>
 #include <QTextStream>
 #include <QCoreApplication>
 #include <QThreadPool>
@@ -50,50 +48,4 @@ void SearchProvider::scheduleSearch(SearchTask* task)
     task->setProvider(this);
     QThreadPool::globalInstance()->start(task);
 }
-
-NaiveSearchProvider::NaiveSearchProvider(Project* project)
-    : m_project(project)
-{
-}
-
-void NaiveSearchProvider::performSearch(SearchTask* task)
-{
-    Result* nextResult = new Result;
-    QStringList parts(task->query().split(" ", QString::SkipEmptyParts));
-    int numberOfParts = parts.size();
-    int numberOfResults = 0;
-
-    const QHash<QString, File*> files = m_project->files();
-    QHash<QString, File*>::const_iterator i;
-    for (i = files.constBegin(); i != files.constEnd(); ++i) {
-        const QString& filename = i.key();
-        int j = 0;
-        for (; j < numberOfParts; ++j) {
-            int index = filename.indexOf(parts[j], 0, Qt::CaseInsensitive);
-
-            if (index == -1) {
-                nextResult->extents().clear();
-                break;
-            } else {
-                Extent extent(index, parts[j].size());
-                nextResult->addExtent(extent);
-            }
-        }
-
-        if (j == numberOfParts) {
-            nextResult->setText(filename);
-            task->newSearchResult(nextResult);
-            nextResult = new Result;
-            numberOfResults++;
-        }
-
-        if (!task->running()) {
-            break;
-        }
-    }
-
-    delete nextResult;
-    task->searchComplete();
-}
-
 }

@@ -16,10 +16,9 @@ namespace Pecera
     Q_OBJECT
 
   public:
-    TabbedProcess(QWidget* parent = 0);
+    TabbedProcess(QTabWidget* tabWidget, QWidget* parent = 0);
     ~TabbedProcess();
 
-    void setTabBar(QTabWidget* tabBar);
     void setCommand(const QString* command);
     void setArguments(const QStringList* arguments);
 
@@ -29,7 +28,7 @@ namespace Pecera
 
   private:
     int index;
-    QTabWidget* tabBar;
+    QTabWidget* m_tabWidget;
     QProcess* process;
     QX11EmbedContainer* container;
     const QString* title;

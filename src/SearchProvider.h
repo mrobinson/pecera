@@ -8,7 +8,6 @@
 #include <QString>
 #include <cstdio>
 
-
 namespace Pecera
 {
 class SearchTask;
@@ -60,17 +59,6 @@ public:
     void scheduleSearch(SearchTask* task);
     virtual void performSearch(SearchTask* task) = 0;
 }; 
-
-class NaiveSearchProvider : public SearchProvider
-{
-public:
-    NaiveSearchProvider(Project* project);
-    ~NaiveSearchProvider() {}
-    void performSearch(SearchTask* task);
-
-private:
-    Project* m_project;
-};
 
 class SearchUpdatedEvent : public QEvent
 {

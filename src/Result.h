@@ -1,3 +1,6 @@
+#ifndef Result_h
+#define Result_h
+
 #include <algorithm>
 #include <QList>
 #include <QString>
@@ -47,9 +50,8 @@ private:
 class Result
 {
 public:
-    Result()
-    {
-    }
+    Result() { }
+    virtual void executeAction() = 0;
 
     void addExtent(Extent& extent)
     {
@@ -83,3 +85,5 @@ private:
 };
 
 }
+
+#endif

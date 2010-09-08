@@ -1,12 +1,14 @@
 // -*- Mode: C; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
+#include "FilenameSearchProvider.h"
+#include "FullTextSearchProvider.h"
 #include "PeceraApplication.h"
 #include "Project.h"
+#include "SearchBar.h"
+#include "SuggestionBox.h"
 #include <iostream>
-
-#include <QVariant>
-
 #include <QApplication>
+#include <QDesktopServices>
 #include <QGroupBox>
 #include <QLineEdit>
 #include <QObject>
@@ -14,19 +16,12 @@
 #include <QShortcut>
 #include <QTabWidget>
 #include <QThreadPool>
-#include <QVBoxLayout>
-#include <QX11EmbedContainer>
-#include <QX11Info>
-#include "SearchBar.h"
-#include "SuggestionBox.h"
-#include <X11/Xlib.h>
-
-#include <QDesktopServices>
-
 #include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
+#include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
+#include <QVariant>
+#include <QVBoxLayout>
 
 namespace Pecera {
 
@@ -147,7 +142,7 @@ int PeceraApplication::exec()
     QVBoxLayout layout;
 
     m_windowLayout = new QVBoxLayout();
-    m_searchBar = new SearchBar(m_projects.at(0));
+    m_searchBar = new SearchBar();
     m_windowLayout->addWidget(m_searchBar);
     m_tabs = new QTabWidget();
     m_windowLayout->addWidget(m_tabs);
@@ -156,8 +151,6 @@ int PeceraApplication::exec()
     m_window->show();
     m_window->resize(800, 600);
 
-    m_searchBar->tabs = m_tabs;
-    m_searchBar->groupBox = m_window;
     reloadLocationShortcut();
 
     return QApplication::exec();
@@ -200,21 +193,13 @@ void PeceraApplication::focusSearchBar()
 
 bool PeceraApplication::x11EventFilter(XEvent* event) 
 {
-    /*
-  Display *display = QX11Info::display();
-
-  if(event->type == KeyPress || event->type == KeyRelease) {
-    //std::cout << event->xkey.keycode << std::endl;
-  }
-  if (event->type == ClientMessage) {
-    std::cout << "ClientMessage" << std::endl;
-    Atom atom = XInternAtom(display, "_XEMBED", FALSE);
-    if(event->xclient.message_type == atom) {
-      std::cout << "XEMBED" << std::endl;
-    }
-  }
-    */
   QApplication::x11EventFilter(event);
+}
+
+void PeceraApplication::performFilenameSearch(SearchTask* task)
+{
+    task->newSearchResult(new FullTextSearchResult(task->query()));
+    m_filenameSearchProvider.scheduleSearch(task);
 }
 
 }

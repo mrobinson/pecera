@@ -13,17 +13,17 @@
 namespace Pecera
 {
 
-SuggestionBox::SuggestionBox(SearchBar* bar, Project* project)
+SuggestionBox::SuggestionBox(SearchBar* bar)
     : QFrame(0)
     , m_bar(bar)
     , m_searchTask(0)
     , m_activeIndex(0)
+    , m_activeResult(0)
     , m_shouldStartNewSearchWhenLineEditChanges(true)
     , m_normalFont(font())
     , m_boldFont(font())
     , m_normalFontMetrics(0)
     , m_boldFontMetrics(0)
-    , m_project(project)
     , m_paintTimer(this)
     , m_backBuffer(1000, 1000)
 {
@@ -54,8 +54,10 @@ void SuggestionBox::setActiveIndex(int newActiveIndex)
         if (newActiveIndex > m_searchTask->results().size() - 1)
             newActiveIndex = m_searchTask->results().size() - 1;
 
+        m_activeResult = m_searchTask->results()[newActiveIndex]; 
+
         m_shouldStartNewSearchWhenLineEditChanges = false;
-        m_bar->setText(m_searchTask->results()[newActiveIndex]->text());
+        m_bar->setText(m_activeResult->text());
         m_shouldStartNewSearchWhenLineEditChanges = true;
 
         m_activeIndex = newActiveIndex;
@@ -90,7 +92,8 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
         }
 
         if (keyEvent->key() == Qt::Key_Escape) {
-            m_searchTask->stop();
+            if (m_searchTask)
+                m_searchTask->stop();
             hide();
         }
 
@@ -114,6 +117,9 @@ bool SuggestionBox::newSearchResult(SearchTask* task)
     if (task != m_searchTask)
         return false;
 
+    if (!m_activeResult)
+        setActiveIndex(0);
+
     return m_searchTask->results().size() <= 10;
 }
 
@@ -128,6 +134,11 @@ void SuggestionBox::searchComplete(SearchTask* task)
 
 void SuggestionBox::paintTimeout()
 {
+    if (!m_searchTask) {
+        hide();
+        return;
+    }
+
     int size = 0;
     {
         QMutexLocker lock(m_searchTask->resultsMutex());
@@ -153,7 +164,7 @@ void SuggestionBox::paintTimeout()
 
 void SuggestionBox::paintEvent(QPaintEvent* event)
 {
-    if (isHidden())
+    if (isHidden() || !m_searchTask)
         return;
 
     QPalette palette(QApplication::palette());
@@ -163,9 +174,6 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     int lineHeight = getLineHeight();
     int baselineOffset = (lineHeight / 2) + (m_normalFontMetrics->ascent() / 2);
     int currentLineOffset = 0;
-
-    painter.drawText(0, baselineOffset, "Full text search...");
-    currentLineOffset += lineHeight;
 
     QMutexLocker lock(m_searchTask->resultsMutex());
     for (int i = 0; i < m_searchTask->results().size(); i++) {
@@ -223,6 +231,7 @@ void SuggestionBox::searchBarChanged(const QString& string)
 
     if (m_searchTask) {
         m_searchTask->stop();
+        m_searchTask = 0;
     }
 
     if (string.isNull() || string.isEmpty()) {
@@ -231,7 +240,7 @@ void SuggestionBox::searchBarChanged(const QString& string)
     }
 
     m_searchTask = new SearchTask(string, this);
-    m_project->performFilenameSearch(m_searchTask);
+    PeceraApplication::instance()->performFilenameSearch(m_searchTask);
     m_paintTimer.start(200);
 }
 
@@ -244,32 +253,14 @@ void SuggestionBox::returned()
 {
     hide();
 
-    QFile targetFile(m_project->getAbsolutePath(m_bar->text()));
-    if (!targetFile.exists())
-        return;
-
-    if (m_searchTask)
+    if (m_searchTask) {
         m_searchTask->stop();
+        m_searchTask = 0;
+    }
+
     m_activeIndex = 0;
-
-    TabbedProcess* tabbedProcess = new TabbedProcess(m_bar->groupBox);
-    tabbedProcess->setTabBar(m_bar->tabs);
-
-    QStringList* arguments = new QStringList();
-    *arguments << "-embed" << QString::number(tabbedProcess->winId());
-    *arguments << "-e" << "vim" << targetFile.fileName();
-    tabbedProcess->setCommand(new QString("/usr/bin/urxvt"));
-    tabbedProcess->setArguments(arguments);
-
-    /*
-    QStringList* arguments = new QStringList();
-    *arguments << "--parent-id" << QString::number(tabbedProcess->winId());
-    *arguments << "-Q";
-    *arguments << "--file" << this->text();
-    tabbedProcess->setCommand(new QString("/usr/bin/emacs-snapshot"));
-    tabbedProcess->setArguments(arguments);
-    */
+    if (m_activeResult)
+        m_activeResult->executeAction();
 }
-
 
 }
