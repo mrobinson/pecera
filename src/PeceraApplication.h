@@ -15,6 +15,7 @@ namespace Pecera {
 class Project;
 class SearchBar;
 class SearchTask;
+class Window;
 
 class PeceraApplication : public QApplication {
     Q_OBJECT
@@ -25,8 +26,7 @@ public:
     ~PeceraApplication();
 
     const QList<Project*>& projects() { return m_projects; }
-    QGroupBox* window() { return m_window; }
-    QTabWidget* tabs() { return m_tabs; }
+    Window* window() { return m_window; }
 
     int exec();
     int initApplicationDatabase();
@@ -36,19 +36,16 @@ public:
     QString getProjectStorageLocation();
     void performFilenameSearch(SearchTask*);
 
-public slots:
-    void focusSearchBar();
-
 private:
     QShortcut* m_locationBarShortcut;
-    QGroupBox* m_window;
-    QVBoxLayout* m_windowLayout;
-    QTabWidget* m_tabs;
-    SearchBar* m_searchBar;
+    Window* m_window;
     QList<Project*> m_projects;
     FilenameSearchProvider m_filenameSearchProvider;
 
     bool x11EventFilter(XEvent* event);
+
+private slots:
+    void handleLastWindowClosed();
 };
 
 }

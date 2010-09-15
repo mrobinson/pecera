@@ -2,6 +2,7 @@
 #include "PeceraApplication.h"
 #include "Project.h"
 #include "TabbedProcess.h"
+#include "Window.h"
 #include <QGroupBox>
 #include <QHash>
 #include <QStringList>
@@ -76,7 +77,7 @@ void FilenameSearchResult::executeAction()
         return;
 
     PeceraApplication* app = PeceraApplication::instance();
-    TabbedProcess* tabbedProcess = new TabbedProcess(app->tabs(), app->window());
+    TabbedProcess* tabbedProcess = new TabbedProcess(app->window()->tabs(), app->window());
 
     QStringList* arguments = new QStringList();
     *arguments << "-embed" << QString::number(tabbedProcess->winId());

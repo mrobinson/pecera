@@ -23,6 +23,8 @@ public:
     SearchBar(QWidget* parent=0);
     ~SearchBar();
     SuggestionBox* suggestionBox() { return m_suggestionBox; }
+    void closeSuggestionBox();
+
 private:
     SuggestionBox* m_suggestionBox;
 };

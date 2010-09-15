@@ -4,6 +4,7 @@
 #include "SearchProvider.h"
 #include "SuggestionBox.h"
 #include "TabbedProcess.h"
+#include "Window.h"
 #include <QApplication>
 #include <QPainter>
 #include <QPaintEvent>
@@ -87,7 +88,7 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
         }
 
         if (keyEvent->key() == Qt::Key_L && keyEvent->modifiers() & Qt::ControlModifier) {
-            PeceraApplication::instance()->focusSearchBar();
+            PeceraApplication::instance()->window()->focusSearchBar();
             return true;
         }
 

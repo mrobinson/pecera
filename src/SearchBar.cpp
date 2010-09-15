@@ -27,4 +27,9 @@ SearchBar::~SearchBar()
     delete m_suggestionBox;
 }
 
+void SearchBar::closeSuggestionBox()
+{
+    m_suggestionBox->close();
+}
+
 }

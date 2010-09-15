@@ -22,6 +22,7 @@ set(pecera_sources
     src/TabbedProcess.cpp
     src/Pecera.cpp
     src/PeceraApplication.cpp
+    src/Window.cpp
 )
 
 set(pecera_moc_classes
@@ -29,6 +30,7 @@ set(pecera_moc_classes
      src/SuggestionBox.h
      src/TabbedProcess.h
      src/PeceraApplication.h
+     src/Window.h
 )
 QT_WRAP_CPP(pecera pecera_moc_files ${pecera_moc_classes})
 
@@ -45,6 +47,7 @@ set(unitTestsSources
     src/TabbedProcess.cpp
     src/PeceraApplication.cpp
     src/UnitTest.cpp
+    src/Window.cpp
 )
 
 QT_WRAP_CPP(unittests pecera_moc_files ${pecera_moc_classes})
