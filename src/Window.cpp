@@ -8,6 +8,8 @@ Window::Window(QWidget* parent)
     : QGroupBox(parent)
     , m_searchBar(new SearchBar())
 {
+    m_tabs.setTabsClosable(true);
+
     m_layout.addWidget(m_searchBar);
     m_layout.addWidget(&m_tabs);
     setLayout(&m_layout);
