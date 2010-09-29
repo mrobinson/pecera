@@ -58,7 +58,7 @@ void SuggestionBox::setActiveIndex(int newActiveIndex)
         m_activeResult = m_searchTask->results()[newActiveIndex]; 
 
         m_shouldStartNewSearchWhenLineEditChanges = false;
-        m_bar->setText(m_activeResult->text());
+        m_bar->setText(m_activeResult->url());
         m_shouldStartNewSearchWhenLineEditChanges = true;
 
         m_activeIndex = newActiveIndex;

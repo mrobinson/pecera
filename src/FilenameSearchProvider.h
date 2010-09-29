@@ -6,6 +6,7 @@
 
 namespace Pecera
 {
+class File;
 
 class FilenameSearchProvider : public SearchProvider
 {
@@ -20,6 +21,7 @@ class FilenameSearchResult : public Result
 public:
     FilenameSearchResult(Project*);
     void executeAction();
+    void setFile(File*);
 
 private:
     Project* m_project;

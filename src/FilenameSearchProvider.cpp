@@ -3,6 +3,7 @@
 #include "Project.h"
 #include "TabbedProcess.h"
 #include "Window.h"
+#include <assert.h>
 #include <QGroupBox>
 #include <QHash>
 #include <QStringList>
@@ -16,7 +17,7 @@ FilenameSearchProvider::FilenameSearchProvider()
 
 static void performSearchOfProject(SearchTask* task, Project* project)
 {
-    Result* nextResult = new FilenameSearchResult(project);
+    FilenameSearchResult* nextResult = new FilenameSearchResult(project);
     QStringList parts(task->query().split(" ", QString::SkipEmptyParts));
     int numberOfParts = parts.size();
     int numberOfResults = 0;
@@ -39,7 +40,7 @@ static void performSearchOfProject(SearchTask* task, Project* project)
         }
 
         if (j == numberOfParts) {
-            nextResult->setText(filename);
+            nextResult->setFile(i.value());
             task->newSearchResult(nextResult);
             nextResult = new FilenameSearchResult(project);
             numberOfResults++;
@@ -93,6 +94,13 @@ void FilenameSearchResult::executeAction()
     tabbedProcess->setCommand(new QString("/usr/bin/emacs-snapshot"));
     tabbedProcess->setArguments(arguments);
     */
+}
+
+void FilenameSearchResult::setFile(File* file)
+{
+    assert(file);
+    m_url = file->projectURL();
+    m_text = file->relativePath();
 }
 
 }

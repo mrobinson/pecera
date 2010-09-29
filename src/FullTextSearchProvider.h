@@ -12,6 +12,8 @@ class FullTextSearchResult : public Result
 public:
     FullTextSearchResult(const QString& searchString)
     {
+        m_url = searchString;
+
         QString resultText("Full text search for ");
         resultText.append(searchString);
         setText(resultText);

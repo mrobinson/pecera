@@ -77,10 +77,12 @@ public:
 
     QList<Extent>& extents() { return m_extents; }
     const QString& text() { return m_text; }
+    const QString& url() { return m_url; }
     void setText(const QString& text) { m_text = text; }
 
-private:
+protected:
     QString m_text;
+    QString m_url;
     QList<Extent> m_extents;
 };
 
