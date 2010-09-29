@@ -97,8 +97,10 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
             m_bar->setText(m_originalSearchBarText);
             m_shouldStartNewSearchWhenLineEditChanges = true;
 
-            if (m_searchTask)
+            if (m_searchTask) {
                 m_searchTask->stop();
+                m_searchTask = 0;
+            }
             hide();
         }
 
