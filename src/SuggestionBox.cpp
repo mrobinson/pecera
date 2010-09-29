@@ -93,6 +93,10 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
         }
 
         if (keyEvent->key() == Qt::Key_Escape) {
+            m_shouldStartNewSearchWhenLineEditChanges = false;
+            m_bar->setText(m_originalSearchBarText);
+            m_shouldStartNewSearchWhenLineEditChanges = true;
+
             if (m_searchTask)
                 m_searchTask->stop();
             hide();
@@ -240,6 +244,7 @@ void SuggestionBox::searchBarChanged(const QString& string)
         return;
     }
 
+    m_originalSearchBarText = string;
     m_searchTask = new SearchTask(string, this);
     PeceraApplication::instance()->performFilenameSearch(m_searchTask);
     m_paintTimer.start(200);
@@ -262,6 +267,12 @@ void SuggestionBox::returned()
     m_activeIndex = 0;
     if (m_activeResult)
         m_activeResult->executeAction();
+}
+
+void SuggestionBox::hide()
+{
+    QFrame::hide();
+    m_activeIndex = 0;
 }
 
 }
