@@ -15,18 +15,15 @@ namespace Pecera
 File::File(Project* project, const QString& relativePath, qint64 lastUpdated)
     : m_project(project)
     , m_relativePath(relativePath)
-    , m_info(0)
     , m_lastUpdated(lastUpdated)
 {
 }
 
 File::~File()
 {
-    if (m_info)
-        delete m_info;
 }
 
-QString File::projectURL()
+QString File::projectURL() const
 {
     QString projectURL("proj://");
     projectURL += m_project->name();
@@ -35,10 +32,10 @@ QString File::projectURL()
     return projectURL;
 }
 
-QFileInfo* File::info()
+const QFileInfo& File::info()
 {
-    if (!m_info)
-        m_info = new QFileInfo(m_project->getAbsolutePath(m_relativePath));
+    if (m_info.filePath().isEmpty())
+        m_info = QFileInfo(m_project->getAbsolutePath(m_relativePath));
     return m_info;
 }
 

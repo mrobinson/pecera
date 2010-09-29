@@ -21,10 +21,10 @@ public:
     File(Project* project, const QString& relativePath, qint64 lastUpdated);
     File() {};
     ~File();
-    QString projectURL();
+    QString projectURL() const;
     QString relativePath() const { return m_relativePath; } 
     QString absolutePath();
-    QFileInfo* info();
+    const QFileInfo& info();
 
     void setLastUpdated(qint64 lastUpdated) { m_lastUpdated = lastUpdated; }
     qint64 lastUpdated() const { return m_lastUpdated; }
@@ -32,7 +32,7 @@ public:
 private:
     Project* m_project;
     QString m_relativePath;
-    QFileInfo* m_info;
+    QFileInfo m_info;
     qint64 m_lastUpdated;
 };
 

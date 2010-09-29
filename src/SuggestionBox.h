@@ -29,6 +29,7 @@ public slots:
     void searchBarChanged(const QString& string);
     void returned();
     void paintTimeout();
+    void hide();
 
 protected:
     void paintEvent(QPaintEvent*);
@@ -50,6 +51,7 @@ private:
     QFontMetrics* m_boldFontMetrics;
     QTimer m_paintTimer;
     QPixmap m_backBuffer;
+    QString m_originalSearchBarText;
 
 };
 
