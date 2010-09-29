@@ -3,6 +3,8 @@
 #include "TabbedProcess.h"
 #include <cstdio>
 #include <unistd.h>
+#include <QFrame>
+#include <iostream>
 
 // TODO
 // 1. Memory management
@@ -13,7 +15,7 @@
 
 namespace Pecera
 {
-TabbedProcess::TabbedProcess(QTabWidget* tabs, QWidget* parent)
+TabbedProcess::TabbedProcess(EditorTabs* tabs, QWidget* parent)
     : QX11EmbedContainer(parent)
     , m_tabWidget(tabs)
     , process(0)
@@ -22,13 +24,13 @@ TabbedProcess::TabbedProcess(QTabWidget* tabs, QWidget* parent)
     , arguments(0)
     , title(new QString("title"))
 {
-    m_tabWidget->addTab(this, *this->title);
     show();
 }
 
-  TabbedProcess::~TabbedProcess() {
-    // TODO:
-    // if(process != 0) delete process;
+  TabbedProcess::~TabbedProcess() 
+  {
+      // TODO:
+      // if(process != 0) delete process;
   }
 
   void TabbedProcess::setCommand(const QString* command) {
@@ -62,9 +64,13 @@ TabbedProcess::TabbedProcess(QTabWidget* tabs, QWidget* parent)
     this->setCommand(0);
     this->setArguments(0);
 
-    int ourIndex = m_tabWidget->indexOf(this);
+    int ourIndex = m_tabWidget->indexOf(this->parentWidget());
     if (ourIndex != -1)
         m_tabWidget->removeTab(ourIndex);
     m_tabWidget = 0;
+  }
+
+  QString TabbedProcess::getTitle() {
+      return *this->title;
   }
 }

@@ -2,8 +2,9 @@
 #define Window_h
 
 #include <QGroupBox>
-#include <QTabWidget>
 #include <QVBoxLayout>
+
+#include "EditorTabs.h"
 
 namespace Pecera
 {
@@ -16,7 +17,7 @@ class Window : public QGroupBox
 public:
     Window(QWidget* parent=0);
     ~Window();
-    QTabWidget* tabs() { return &m_tabs; }
+    EditorTabs* tabs() { return &m_tabs; }
 
 public slots:
     void focusSearchBar();
@@ -26,7 +27,7 @@ protected:
 
 private:
     QVBoxLayout m_layout;
-    QTabWidget m_tabs;
+    EditorTabs m_tabs;
     SearchBar* m_searchBar;
 };
 

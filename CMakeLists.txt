@@ -14,6 +14,7 @@ include(${QT_USE_FILE})
 # Pecera
 SET(CMAKE_BUILD_TYPE Debug)
 set(pecera_sources
+    src/EditorTabs.cpp
     src/FilenameSearchProvider.cpp
     src/Project.cpp
     src/SearchBar.cpp
@@ -26,6 +27,7 @@ set(pecera_sources
 )
 
 set(pecera_moc_classes
+     src/EditorTabs.h
      src/SearchBar.h
      src/SuggestionBox.h
      src/TabbedProcess.h
@@ -39,6 +41,7 @@ target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${QTSQL_LIBRARI
 
 # Unit tests
 set(unitTestsSources
+    src/EditorTabs.cpp
     src/FilenameSearchProvider.cpp
     src/Project.cpp
     src/SearchBar.cpp

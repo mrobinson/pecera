@@ -3,9 +3,11 @@
 #include "Project.h"
 #include "TabbedProcess.h"
 #include "Window.h"
+#include <QWidget>
 #include <QGroupBox>
 #include <QHash>
 #include <QStringList>
+#include <QGridLayout>
 
 namespace Pecera
 {
@@ -77,7 +79,12 @@ void FilenameSearchResult::executeAction()
         return;
 
     PeceraApplication* app = PeceraApplication::instance();
-    TabbedProcess* tabbedProcess = new TabbedProcess(app->window()->tabs(), app->window());
+    QWidget* page = new QWidget();
+    QGridLayout* layout = new QGridLayout(page);
+    TabbedProcess* tabbedProcess = 
+	new TabbedProcess(app->window()->tabs());
+    layout->addWidget(tabbedProcess);
+    app->window()->tabs()->addTab(page, tabbedProcess->getTitle());
 
     QStringList* arguments = new QStringList();
     *arguments << "-embed" << QString::number(tabbedProcess->winId());
