@@ -3,7 +3,9 @@
 
 #include <iostream>
 
+#include <QWidget>
 #include <QProcess>
+#include <QTabWidget>
 #include <QX11EmbedContainer>
 
 #include "PeceraApplication.h"
@@ -11,23 +13,26 @@
 
 namespace Pecera
 {
-  class TabbedProcess : public QX11EmbedContainer
-  {
-    Q_OBJECT
 
-  public:
+class EditorTabs;
+
+class TabbedProcess : public QX11EmbedContainer
+{
+Q_OBJECT
+
+public:
     TabbedProcess(EditorTabs* tabWidget, QWidget* parent = 0);
     ~TabbedProcess();
-
+    
     void setCommand(const QString* command);
     void setArguments(const QStringList* arguments);
     QString getTitle();
 
-  public slots:
+public slots:
     void started();
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
 
-  private:
+private:
     int index;
     EditorTabs* m_tabWidget;
     QProcess* process;
@@ -37,7 +42,8 @@ namespace Pecera
     const QStringList* arguments;
 
     void launchProcess();
-  };
+};
+
 }
 
 #endif

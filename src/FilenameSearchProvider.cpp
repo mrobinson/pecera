@@ -80,6 +80,10 @@ void FilenameSearchResult::executeAction()
         return;
 
     PeceraApplication* app = PeceraApplication::instance();
+    app->window()->tabs()->setTab(&targetFile);
+    /* *********
+
+    PeceraApplication* app = PeceraApplication::instance();
     QWidget* page = new QWidget();
     QGridLayout* layout = new QGridLayout(page);
     TabbedProcess* tabbedProcess = 
@@ -87,11 +91,8 @@ void FilenameSearchResult::executeAction()
     layout->addWidget(tabbedProcess);
     app->window()->tabs()->addTab(page, tabbedProcess->getTitle());
 
-    QStringList* arguments = new QStringList();
-    *arguments << "-embed" << QString::number(tabbedProcess->winId());
-    *arguments << "-e" << "vim" << targetFile.fileName();
-    tabbedProcess->setCommand(new QString("/usr/bin/urxvt"));
-    tabbedProcess->setArguments(arguments);
+
+    ******** */
 
     /*
     QStringList* arguments = new QStringList();

@@ -27,6 +27,7 @@ set(pecera_sources
 )
 
 set(pecera_moc_classes
+     src/EditorTab.h
      src/EditorTabs.h
      src/SearchBar.h
      src/SuggestionBox.h

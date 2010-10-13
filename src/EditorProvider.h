@@ -4,12 +4,13 @@
 #include <QString>
 
 namespace Pecera {
-  class EditorProvider {
-  public:
+
+class EditorProvider {
+public:
     virtual void openFile(QString filename) {};
     virtual ~EditorProvider() {};
-  private:
-  };
+private:
+};
 }
 
 #endif
