@@ -20,10 +20,12 @@ public:
     ~EditorTab();
 
     EditorProvider* getProvider();
+    QString title();
+
 private:
     TabbedProcess* tabbedProcess;
     EditorProvider* provider;
-    QFile* file;
+    QFile* m_file;
 };
 
 }

@@ -33,5 +33,4 @@ void Window::focusSearchBar()
     m_searchBar->setFocus();
 }
 
-
 }

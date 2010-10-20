@@ -81,27 +81,6 @@ void FilenameSearchResult::executeAction()
 
     PeceraApplication* app = PeceraApplication::instance();
     app->window()->tabs()->setTab(&targetFile);
-    /* *********
-
-    PeceraApplication* app = PeceraApplication::instance();
-    QWidget* page = new QWidget();
-    QGridLayout* layout = new QGridLayout(page);
-    TabbedProcess* tabbedProcess = 
-	new TabbedProcess(app->window()->tabs());
-    layout->addWidget(tabbedProcess);
-    app->window()->tabs()->addTab(page, tabbedProcess->getTitle());
-
-
-    ******** */
-
-    /*
-    QStringList* arguments = new QStringList();
-    *arguments << "--parent-id" << QString::number(tabbedProcess->winId());
-    *arguments << "-Q";
-    *arguments << "--file" << this->text();
-    tabbedProcess->setCommand(new QString("/usr/bin/emacs-snapshot"));
-    tabbedProcess->setArguments(arguments);
-    */
 }
 
 void FilenameSearchResult::setFile(File* file)
