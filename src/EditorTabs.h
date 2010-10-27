@@ -1,14 +1,11 @@
 #ifndef EditorTabs_h
 #define EditorTabs_h
 
+#include "EditorTab.h"
 #include <QFile>
 #include <QHash>
 #include <QWidget>
 #include <QTabWidget>
-
-#include "TabbedProcess.h"
-#include "EditorTab.h"
-#include "EditorProvider.h"
 
 namespace Pecera 
 {

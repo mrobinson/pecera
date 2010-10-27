@@ -1,7 +1,8 @@
 #include "EditorTabs.h"
 #include "Window.h"
-#include <QGridLayout>
+#include <QFile>
 #include <QFileInfo>
+#include <QGridLayout>
 
 // TODO:
 // 1. Figure out how to launch rxvt/vim as the non-top tab and have it still work.

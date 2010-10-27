@@ -1,10 +1,11 @@
 #ifndef EditorTab_h
 #define EditorTab_h
 
+#include <QFile>
 #include <QGridLayout>
-
-#include "EditorProvider.h"
-#include "TabbedProcess.h"
+#include <QWidget>
+#include <QProcess>
+#include <QX11EmbedContainer>
 
 namespace Pecera 
 {
@@ -19,8 +20,6 @@ Q_OBJECT
 public:
     EditorTab(QFile*, EditorTabs*);
     ~EditorTab();
-
-    EditorProvider* getProvider();
     void added();
     QString title();
 
@@ -34,6 +33,7 @@ private:
     QFile* m_file;
     QGridLayout* m_layout;
     QX11EmbedContainer* m_x11Embed;
+    bool embedded;
 };
 
 }

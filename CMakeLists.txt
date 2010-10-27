@@ -21,7 +21,6 @@ set(pecera_sources
     src/SearchBar.cpp
     src/SuggestionBox.cpp
     src/SearchProvider.cpp
-    src/TabbedProcess.cpp
     src/Pecera.cpp
     src/PeceraApplication.cpp
     src/Window.cpp
@@ -32,7 +31,6 @@ set(pecera_moc_classes
      src/EditorTabs.h
      src/SearchBar.h
      src/SuggestionBox.h
-     src/TabbedProcess.h
      src/PeceraApplication.h
      src/Window.h
 )
@@ -50,7 +48,6 @@ set(unitTestsSources
     src/SearchBar.cpp
     src/SuggestionBox.cpp
     src/SearchProvider.cpp
-    src/TabbedProcess.cpp
     src/PeceraApplication.cpp
     src/UnitTest.cpp
     src/Window.cpp

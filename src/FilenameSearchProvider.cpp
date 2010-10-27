@@ -1,7 +1,6 @@
 #include "FilenameSearchProvider.h"
 #include "PeceraApplication.h"
 #include "Project.h"
-#include "TabbedProcess.h"
 #include "Window.h"
 #include <assert.h>
 #include <QWidget>

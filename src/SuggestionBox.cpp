@@ -1,9 +1,9 @@
+#include "PeceraApplication.h"
 #include "Project.h"
 #include "Result.h"
 #include "SearchBar.h"
 #include "SearchProvider.h"
 #include "SuggestionBox.h"
-#include "TabbedProcess.h"
 #include "Window.h"
 #include <QApplication>
 #include <QPainter>

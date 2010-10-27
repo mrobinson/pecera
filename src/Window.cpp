@@ -28,7 +28,6 @@ void Window::closeEvent(QCloseEvent* event)
 
 void Window::focusSearchBar()
 {
-    std::cout << "focusSearchBar" << std::endl;
     m_searchBar->selectAll();
     m_searchBar->setFocus();
 }
