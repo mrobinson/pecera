@@ -36,8 +36,9 @@ void EditorTabs::setTab(QFile* file)
         if (index != -1)
             this->setCurrentIndex(index);
     } else {
-        EditorTab* tab = new EditorTab(file);
+        EditorTab* tab = new EditorTab(file, this);
         this->addTab(tab, tab->title());
+        tab->added();
         this->tabs[file] = tab;
     }
 }

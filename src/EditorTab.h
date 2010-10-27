@@ -1,7 +1,7 @@
 #ifndef EditorTab_h
 #define EditorTab_h
 
-#include <QTabWidget>
+#include <QGridLayout>
 
 #include "EditorProvider.h"
 #include "TabbedProcess.h"
@@ -10,22 +10,30 @@ namespace Pecera
 {
 
 class TabbedProcess;
+class EditorTabs;
 
 class EditorTab : public QWidget 
 {
 Q_OBJECT
 
 public:
-    EditorTab(QFile* file);
+    EditorTab(QFile*, EditorTabs*);
     ~EditorTab();
 
     EditorProvider* getProvider();
+    void added();
     QString title();
 
+public slots:
+    void processStarted();
+    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 private:
-    TabbedProcess* tabbedProcess;
-    EditorProvider* provider;
+    QProcess* m_process;
+    EditorTabs* m_tabs;
     QFile* m_file;
+    QGridLayout* m_layout;
+    QX11EmbedContainer* m_x11Embed;
 };
 
 }
