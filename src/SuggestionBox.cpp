@@ -20,6 +20,7 @@ SuggestionBox::SuggestionBox(SearchBar* bar)
     , m_searchTask(0)
     , m_activeIndex(0)
     , m_activeResult(0)
+    , m_prelightIndex(-1)
     , m_shouldStartNewSearchWhenLineEditChanges(true)
     , m_normalFont(font())
     , m_boldFont(font())
@@ -48,6 +49,7 @@ SuggestionBox::SuggestionBox(SearchBar* bar)
 
 void SuggestionBox::setActiveIndex(int newActiveIndex)
 {
+    m_prelightIndex = -1;
     {
         QMutexLocker lock(m_searchTask->resultsMutex());
         if (newActiveIndex < 0)
@@ -68,12 +70,6 @@ void SuggestionBox::setActiveIndex(int newActiveIndex)
 
 bool SuggestionBox::eventFilter(QObject*, QEvent* event)
 {
-    if (event->type() == QEvent::MouseButtonPress) {
-        hide();
-        m_bar->setFocus();
-        return true;
-    }
-
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
@@ -109,6 +105,25 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
     }
 
     return false;
+}
+
+void SuggestionBox::mouseMoveEvent(QMouseEvent* event)
+{
+    m_prelightIndex = event->y() / getLineHeight();
+}
+
+void SuggestionBox::mousePressEvent(QMouseEvent* event)
+{
+    // Outside the box. Hide.
+    if (event->x() < 0 || event->x() > width() || event->y() < 0 || event->y() > height()) {
+        hide();
+        m_bar->setFocus();
+        return;
+    }
+
+    setActiveIndex(event->y() / getLineHeight());
+    returned();
+
 }
 
 SuggestionBox::~SuggestionBox()
@@ -186,6 +201,13 @@ void SuggestionBox::paintEvent(QPaintEvent* event)
     for (int i = 0; i < m_searchTask->results().size(); i++) {
         if (i == m_activeIndex) {
             painter.fillRect(QRect(0, currentLineOffset, event->rect().width(), lineHeight), palette.highlight());
+            painter.setBrush(palette.highlightedText());
+        } else if (i == m_prelightIndex) {
+            QBrush prelightBrush(QColor(
+                (palette.highlight().color().red() + palette.background().color().red()) / 2,
+                (palette.highlight().color().green() + palette.background().color().green()) / 2,
+                (palette.highlight().color().blue() + palette.background().color().blue()) / 2));
+            painter.fillRect(QRect(0, currentLineOffset, event->rect().width(), lineHeight), prelightBrush);
             painter.setBrush(palette.highlightedText());
         } else {
             painter.setBrush(palette.text());

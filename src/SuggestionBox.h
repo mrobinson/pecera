@@ -21,6 +21,8 @@ public:
     virtual bool newSearchResult(SearchTask*);
     virtual void searchComplete(SearchTask*);
     virtual bool eventFilter(QObject*, QEvent*);
+    virtual void mouseMoveEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*);
 
 signals:
     void forcePaint();
@@ -42,6 +44,7 @@ private:
     SearchTask* m_searchTask;
     unsigned int m_activeIndex;
     Result* m_activeResult;
+    int m_prelightIndex;
 
     // TODO: Find a better way to do this.
     bool m_shouldStartNewSearchWhenLineEditChanges;
