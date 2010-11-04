@@ -89,15 +89,7 @@ bool SuggestionBox::eventFilter(QObject*, QEvent* event)
         }
 
         if (keyEvent->key() == Qt::Key_Escape) {
-            m_shouldStartNewSearchWhenLineEditChanges = false;
-            m_bar->setText(m_originalSearchBarText);
-            m_shouldStartNewSearchWhenLineEditChanges = true;
-
-            if (m_searchTask) {
-                m_searchTask->stop();
-                m_searchTask = 0;
-            }
-            hide();
+            stopSearchAndHide();
         }
 
         m_bar->setFocus();
@@ -116,7 +108,7 @@ void SuggestionBox::mousePressEvent(QMouseEvent* event)
 {
     // Outside the box. Hide.
     if (event->x() < 0 || event->x() > width() || event->y() < 0 || event->y() > height()) {
-        hide();
+        stopSearchAndHide();
         m_bar->setFocus();
         return;
     }
@@ -124,6 +116,19 @@ void SuggestionBox::mousePressEvent(QMouseEvent* event)
     setActiveIndex(event->y() / getLineHeight());
     returned();
 
+}
+
+void SuggestionBox::stopSearchAndHide()
+{
+    m_shouldStartNewSearchWhenLineEditChanges = false;
+    m_bar->setText(m_originalSearchBarText);
+    m_shouldStartNewSearchWhenLineEditChanges = true;
+
+    if (m_searchTask) {
+        m_searchTask->stop();
+        m_searchTask = 0;
+    }
+    hide();
 }
 
 SuggestionBox::~SuggestionBox()

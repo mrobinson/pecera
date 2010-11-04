@@ -22,7 +22,7 @@ public:
     virtual void searchComplete(SearchTask*);
     virtual bool eventFilter(QObject*, QEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
-    void mousePressEvent(QMouseEvent*);
+    virtual void mousePressEvent(QMouseEvent*);
 
 signals:
     void forcePaint();
@@ -39,6 +39,7 @@ protected:
 private:
     int getLineHeight();
     void setActiveIndex(int newActiveIndex);
+    void stopSearchAndHide();
 
     SearchBar* m_bar;
     SearchTask* m_searchTask;
