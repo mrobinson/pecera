@@ -62,7 +62,6 @@ int PeceraApplication::initApplicationDatabase() {
     }
 
     db.close();
-        
     return true;
 }
 
@@ -96,41 +95,46 @@ int PeceraApplication::createProject(QString title, QString path) {
     return true;
 }
 
-int PeceraApplication::exec()
+void PeceraApplication::readProjects()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-
     QDir projectDir = QDir(this->getGlobalStorageLocation());
     projectDir.mkpath(projectDir.absolutePath());
     QString dbPath = this->getGlobalStorageLocation().append(QString("/pecera.db"));
     db.setDatabaseName(dbPath);
+    if (!db.open())
+        return;
 
-    if(db.open()) {
-        QSqlQuery query(db);
-        if(!query.exec("SELECT * FROM projects")) {
-            std::cout << query.lastError().text().toStdString() 
-                  << std::endl;
-            return EXIT_FAILURE;
-        }
-
-        int projectNameIndex = query.record().indexOf("name");
-        int projectPathIndex = query.record().indexOf("path");
-        while (query.next()) {
-            std::cout << query.value(projectPathIndex).toString().toStdString()
-                  << std::endl;
-            m_projects.append(new Project(query.value(projectNameIndex).toString(), QDir(query.value(projectPathIndex).toString())));
-            break;
-        }
-        db.close();
-
-        if(this->m_projects.size() == 0) {
-            std::cerr << "sqlite3 " << dbPath.toStdString()
-                  << std::endl
-                  << " INSERT INTO projects (name, description, path) VALUES('yourprojectname', 'yourdescription', 'yourpath')"
-                  << std::endl;
-            return EXIT_FAILURE;
-        }
+    QSqlQuery query(db);
+    if (!query.exec("SELECT * FROM projects")) {
+        std::cout << query.lastError().text().toStdString() << std::endl;
+        return;
     }
+
+    int projectNameIndex = query.record().indexOf("name");
+    int projectPathIndex = query.record().indexOf("path");
+    while (query.next()) {
+        std::cout << query.value(projectPathIndex).toString().toStdString() << std::endl;
+        m_projects.append(new Project(query.value(projectNameIndex).toString(),
+                                      QDir(query.value(projectPathIndex).toString())));
+        // FIXME: Ugly.
+        m_ctagsSearchProvider.projectOpened();
+        break;
+    }
+    db.close();
+
+    if (this->m_projects.size() == 0) {
+        std::cerr << "sqlite3 " << dbPath.toStdString()
+              << std::endl
+              << " INSERT INTO projects (name, description, path) VALUES('yourprojectname', 'yourdescription', 'yourpath')"
+              << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+int PeceraApplication::exec()
+{
+    readProjects();
 
     QThreadPool::globalInstance()->start(new LoadProjectTask(m_projects.at(0)));
 
@@ -180,6 +184,7 @@ void PeceraApplication::performFilenameSearch(SearchTask* task)
 {
     task->newSearchResult(new FullTextSearchResult(task->query()));
     m_filenameSearchProvider.scheduleSearch(task);
+    //m_ctagsSearchProvider.scheduleSearch(task);
 }
 
 void PeceraApplication::handleLastWindowClosed()

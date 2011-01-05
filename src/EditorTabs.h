@@ -21,13 +21,14 @@ public:
     ~EditorTabs();
 
     virtual void removeTab(int index);
-    void setTab(QFile* file);
+    void openTabWithFile(const QFile&);
+    void openTabWithFileAndLineNumber(const QFile& file, unsigned long lineNumber);
+    void openTabWithFileAndRegex(const QFile& file, const QString& regex);
 
 private:
-    // cases
-    //  - a process running in a managed tab
-    //  - a process running in its own window... deferred for right now
-    QHash<QFile*, EditorTab*> tabs;
+    void addEditorTab(EditorTab*);
+    bool focusTabIfExists(const QFile&);
+    QList<EditorTab*> m_tabs;
 };
 
 }

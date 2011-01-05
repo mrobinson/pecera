@@ -27,19 +27,55 @@ void EditorTabs::removeTab(int index)
     delete page;
 }
 
-void EditorTabs::setTab(QFile* file)
+void EditorTabs::addEditorTab(EditorTab* tab)
 {
-    if (this->tabs.contains(file)) {
-        // just focus the tab
-        EditorTab* tab = this->tabs[file];
-        int index = this->indexOf(tab);
-        if (index != -1)
-            this->setCurrentIndex(index);
-    } else {
-        EditorTab* tab = new EditorTab(file, this);
-        this->addTab(tab, tab->title());
-        tab->added();
-        this->tabs[file] = tab;
-    }
+    tab->added();
+    m_tabs.append(tab);
+    this->addTab(tab, tab->title());
 }
+
+bool EditorTabs::focusTabIfExists(const QFile& file)
+{
+    QList<EditorTab*>::iterator i = m_tabs.begin();
+    while (i != m_tabs.end()) {
+        EditorTab* tab = *i;
+        if (tab->file().fileName() != file.fileName())
+            continue;
+        int index = this->indexOf(tab);
+        if (index != -1) {
+            this->setCurrentIndex(index);
+            return true;
+        }
+    }
+    return false;
+}
+
+void EditorTabs::openTabWithFile(const QFile& file)
+{
+    if (focusTabIfExists(file))
+        return;
+
+    this->addEditorTab(new EditorTab(file, this));
+}
+
+void EditorTabs::openTabWithFileAndLineNumber(const QFile& file, unsigned long lineNumber)
+{
+    if (focusTabIfExists(file))
+        return;
+
+    EditorTab* tab = new EditorTab(file, this);
+    tab->setStartingLineNumber(lineNumber);
+    this->addEditorTab(tab);
+}
+
+void EditorTabs::openTabWithFileAndRegex(const QFile& file, const QString& regex)
+{
+    if (focusTabIfExists(file))
+        return;
+
+    EditorTab* tab = new EditorTab(file, this);
+    tab->setStartingRegex(regex);
+    this->addEditorTab(tab);
+}
+
 }

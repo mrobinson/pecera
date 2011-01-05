@@ -79,7 +79,7 @@ void FilenameSearchResult::executeAction()
         return;
 
     PeceraApplication* app = PeceraApplication::instance();
-    app->window()->tabs()->setTab(&targetFile);
+    app->window()->tabs()->openTabWithFile(targetFile);
 }
 
 void FilenameSearchResult::setFile(File* file)

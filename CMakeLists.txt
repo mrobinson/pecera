@@ -14,6 +14,7 @@ include(${QT_USE_FILE})
 # Pecera
 SET(CMAKE_BUILD_TYPE Debug)
 set(pecera_sources
+    src/CtagsSearchProvider.cpp
     src/EditorTab.cpp
     src/EditorTabs.cpp
     src/FilenameSearchProvider.cpp
@@ -23,6 +24,7 @@ set(pecera_sources
     src/SearchProvider.cpp
     src/Pecera.cpp
     src/PeceraApplication.cpp
+    src/readtags.c
     src/Window.cpp
 )
 
@@ -41,6 +43,7 @@ target_link_libraries(pecera ${QT_LIBRARIES} ${SQLITE_LIBRARIES} ${QTSQL_LIBRARI
 
 # Unit tests
 set(unitTestsSources
+    src/CtagsSearchProvider.cpp
     src/EditorTab.cpp
     src/EditorTabs.cpp
     src/FilenameSearchProvider.cpp
@@ -50,6 +53,7 @@ set(unitTestsSources
     src/SearchProvider.cpp
     src/PeceraApplication.cpp
     src/UnitTest.cpp
+    src/readtags.c
     src/Window.cpp
 )
 

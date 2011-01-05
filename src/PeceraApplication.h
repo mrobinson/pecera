@@ -2,6 +2,7 @@
 #define PeceraApplication_h
 
 #include "FilenameSearchProvider.h"
+#include "CtagsSearchProvider.h"
 #include <QApplication>
 #include <QObject>
 
@@ -41,7 +42,9 @@ private:
     Window* m_window;
     QList<Project*> m_projects;
     FilenameSearchProvider m_filenameSearchProvider;
+    CtagsSearchProvider m_ctagsSearchProvider;
 
+    void readProjects();
     bool x11EventFilter(XEvent* event);
 
 private slots:
